@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { authService } from "@/lib/auth/auth";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -12,6 +14,8 @@ export default function RegisterPage() {
     confirmPassword: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -22,18 +26,32 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
 
     if (formData.password !== formData.confirmPassword) {
-      alert("Les mots de passe ne correspondent pas");
+      setError("Les mots de passe ne correspondent pas");
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setError("Le mot de passe doit contenir au moins 8 caractères");
       return;
     }
 
     setIsLoading(true);
-    // TODO: Implement registration logic
-    setTimeout(() => {
+
+    try {
+      await authService.register({
+        email: formData.email,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+      });
+      router.push("/"); // Redirect to home page after successful registration
+    } catch (err: any) {
+      setError(err.message || "Échec de l'inscription. Veuillez réessayer.");
       setIsLoading(false);
-      console.log("Register:", formData);
-    }, 1000);
+    }
   };
 
   return (
@@ -54,6 +72,12 @@ export default function RegisterPage() {
           <h2 className="font-serif text-3xl font-semibold text-[#0F172A] mb-6">
             Inscription
           </h2>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-[16px] text-sm mb-4">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name Fields */}

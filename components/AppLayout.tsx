@@ -1,13 +1,18 @@
 "use client";
 
 import { useAuth } from "@/lib/context/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-export default function Home() {
+interface AppLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function AppLayout({ children }: AppLayoutProps) {
   const { user, profile, loading, signOut } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
@@ -29,6 +34,9 @@ export default function Home() {
 
   if (!user) return null;
 
+  const isActive = (path: string) =>
+    pathname === path || pathname?.startsWith(path + "/");
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F0F9FF] to-[#E0F2FE]">
       {/* Top Navigation Bar */}
@@ -38,7 +46,7 @@ export default function Home() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 hover:bg-[#F0F9FF] rounded-[12px] transition-colors lg:hidden"
+              className="p-2 hover:bg-[#F0F9FF] rounded-[12px] transition-colors"
             >
               <svg
                 className="w-6 h-6 text-[#0F172A]"
@@ -54,9 +62,11 @@ export default function Home() {
                 />
               </svg>
             </button>
-            <h1 className="font-serif text-2xl font-bold text-[#0F172A]">
-              Zo POS
-            </h1>
+            <Link href="/">
+              <h1 className="font-serif text-2xl font-bold text-[#0F172A] cursor-pointer">
+                Zo POS
+              </h1>
+            </Link>
           </div>
 
           {/* Center: Search Bar (Desktop) */}
@@ -141,11 +151,16 @@ export default function Home() {
                    }`}
       >
         <nav className="p-4 space-y-2">
-          {/* Dashboard */}
-          <Link href="/dashboard">
+          {/* Home */}
+          <Link href="/">
             <div
-              className="flex items-center gap-3 px-4 py-3 rounded-[16px] hover:bg-[#3B82F6]/10 
-                          transition-colors cursor-pointer group"
+              className={`flex items-center gap-3 px-4 py-3 rounded-[16px] transition-colors cursor-pointer group ${
+                isActive("/") &&
+                !isActive("/dashboard") &&
+                !isActive("/products")
+                  ? "bg-[#3B82F6]/10"
+                  : "hover:bg-[#3B82F6]/10"
+              }`}
             >
               <svg
                 className="w-5 h-5 text-[#3B82F6] group-hover:text-[#2563EB]"
@@ -160,6 +175,32 @@ export default function Home() {
                   d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
                 />
               </svg>
+              <span className="font-medium text-[#0F172A]">Accueil</span>
+            </div>
+          </Link>
+
+          {/* Dashboard */}
+          <Link href="/dashboard">
+            <div
+              className={`flex items-center gap-3 px-4 py-3 rounded-[16px] transition-colors cursor-pointer group ${
+                isActive("/dashboard")
+                  ? "bg-[#3B82F6]/10"
+                  : "hover:bg-[#3B82F6]/10"
+              }`}
+            >
+              <svg
+                className="w-5 h-5 text-[#3B82F6] group-hover:text-[#2563EB]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
+              </svg>
               <span className="font-medium text-[#0F172A]">Dashboard</span>
             </div>
           </Link>
@@ -167,11 +208,14 @@ export default function Home() {
           {/* Products */}
           <Link href="/products">
             <div
-              className="flex items-center gap-3 px-4 py-3 rounded-[16px] bg-[#3B82F6]/10 
-                          transition-colors cursor-pointer"
+              className={`flex items-center gap-3 px-4 py-3 rounded-[16px] transition-colors cursor-pointer group ${
+                isActive("/products")
+                  ? "bg-[#3B82F6]/10"
+                  : "hover:bg-[#3B82F6]/10"
+              }`}
             >
               <svg
-                className="w-5 h-5 text-[#3B82F6]"
+                className="w-5 h-5 text-[#3B82F6] group-hover:text-[#2563EB]"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -307,207 +351,16 @@ export default function Home() {
       {/* Main Content Area */}
       <main
         className={`pt-16 transition-all duration-300 ${
-          sidebarOpen ? "lg:pl-64" : "pl-0"
+          sidebarOpen ? "pl-0 lg:pl-64" : "pl-0"
         }`}
       >
-        <div className="p-8">
-          {/* Welcome Section */}
-          <div className="mb-8">
-            <h2 className="font-serif text-4xl font-bold text-[#0F172A] mb-2">
-              Affirmez votre style
-            </h2>
-            <p className="text-lg text-[#0F172A]/60">
-              Bienvenue sur votre plateforme de mode premium
-            </p>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white/70 backdrop-blur-md rounded-[24px] p-6 border border-white/20 shadow-lg">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-[#3B82F6]/10 rounded-[16px]">
-                  <svg
-                    className="w-6 h-6 text-[#3B82F6]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                    />
-                  </svg>
-                </div>
-                <span className="text-green-500 text-sm font-medium">+12%</span>
-              </div>
-              <h3 className="text-2xl font-bold text-[#0F172A] mb-1">142</h3>
-              <p className="text-sm text-[#0F172A]/60">Produits actifs</p>
-            </div>
-
-            <div className="bg-white/70 backdrop-blur-md rounded-[24px] p-6 border border-white/20 shadow-lg">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-green-500/10 rounded-[16px]">
-                  <svg
-                    className="w-6 h-6 text-green-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                    />
-                  </svg>
-                </div>
-                <span className="text-green-500 text-sm font-medium">+23%</span>
-              </div>
-              <h3 className="text-2xl font-bold text-[#0F172A] mb-1">89</h3>
-              <p className="text-sm text-[#0F172A]/60">Commandes ce mois</p>
-            </div>
-
-            <div className="bg-white/70 backdrop-blur-md rounded-[24px] p-6 border border-white/20 shadow-lg">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-purple-500/10 rounded-[16px]">
-                  <svg
-                    className="w-6 h-6 text-purple-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                    />
-                  </svg>
-                </div>
-                <span className="text-green-500 text-sm font-medium">+8%</span>
-              </div>
-              <h3 className="text-2xl font-bold text-[#0F172A] mb-1">1,234</h3>
-              <p className="text-sm text-[#0F172A]/60">Clients actifs</p>
-            </div>
-
-            <div className="bg-white/70 backdrop-blur-md rounded-[24px] p-6 border border-white/20 shadow-lg">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-yellow-500/10 rounded-[16px]">
-                  <svg
-                    className="w-6 h-6 text-yellow-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-                <span className="text-green-500 text-sm font-medium">+18%</span>
-              </div>
-              <h3 className="text-2xl font-bold text-[#0F172A] mb-1">
-                €45,678
-              </h3>
-              <p className="text-sm text-[#0F172A]/60">Revenus ce mois</p>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="bg-white/70 backdrop-blur-md rounded-[24px] p-8 border border-white/20 shadow-lg">
-            <h3 className="font-serif text-2xl font-semibold text-[#0F172A] mb-6">
-              Actions rapides
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Link
-                href="/products/add"
-                className="flex items-center gap-4 p-4 bg-[#3B82F6]/10 rounded-[16px] hover:bg-[#3B82F6]/20 
-                         transition-all duration-200 group"
-              >
-                <div className="p-3 bg-[#3B82F6] rounded-[12px]">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-[#0F172A]">
-                    Nouveau Produit
-                  </h4>
-                  <p className="text-sm text-[#0F172A]/60">
-                    Ajouter au catalogue
-                  </p>
-                </div>
-              </Link>
-
-              <button className="flex items-center gap-4 p-4 bg-gray-100 rounded-[16px] opacity-50 cursor-not-allowed">
-                <div className="p-3 bg-gray-300 rounded-[12px]">
-                  <svg
-                    className="w-6 h-6 text-gray-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-600">
-                    Nouvelle Commande
-                  </h4>
-                  <p className="text-sm text-gray-500">Bientôt disponible</p>
-                </div>
-              </button>
-
-              <button className="flex items-center gap-4 p-4 bg-gray-100 rounded-[16px] opacity-50 cursor-not-allowed">
-                <div className="p-3 bg-gray-300 rounded-[12px]">
-                  <svg
-                    className="w-6 h-6 text-gray-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-600">Voir Rapports</h4>
-                  <p className="text-sm text-gray-500">Bientôt disponible</p>
-                </div>
-              </button>
-            </div>
-          </div>
-        </div>
+        {children}
       </main>
 
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden top-16"
           onClick={() => setSidebarOpen(false)}
         ></div>
       )}

@@ -2,20 +2,30 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { authService } from "@/lib/auth/auth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // TODO: Implement authentication logic
-    setTimeout(() => {
+    setError("");
+
+    try {
+      await authService.login({ email, password });
+      router.push("/"); // Redirect to home page after successful login
+    } catch (err: any) {
+      setError(
+        err.message || "Échec de la connexion. Vérifiez vos identifiants.",
+      );
       setIsLoading(false);
-      console.log("Login:", { email, password });
-    }, 1000);
+    }
   };
 
   return (
@@ -34,6 +44,12 @@ export default function LoginPage() {
           <h2 className="font-serif text-3xl font-semibold text-[#0F172A] mb-6">
             Connexion
           </h2>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-[16px] text-sm">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email Field */}
