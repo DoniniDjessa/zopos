@@ -2,12 +2,45 @@
 
 import { useAuth } from "@/lib/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import AppLayout from "@/components/AppLayout";
+import { supabase } from "@/lib/supabase/client";
+
+// Format price as 25k, 26.5k, etc.
+const formatPrice = (price: number): string => {
+  if (price >= 1000) {
+    const kPrice = price / 1000;
+    return kPrice % 1 === 0 ? `${kPrice}k` : `${kPrice.toFixed(1)}k`;
+  }
+  return price.toString();
+};
+
+interface Product {
+  id: string;
+  zopos_qty: Record<string, number>;
+}
+
+interface Sale {
+  id: string;
+  total_amount: number;
+  items_count: number;
+  created_at: string;
+}
 
 export default function DashboardPage() {
-  const { user, profile, loading, signOut } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
+
+  // Stats
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [totalStock, setTotalStock] = useState(0);
+  const [lowStockItems, setLowStockItems] = useState(0);
+  const [totalSales, setTotalSales] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [todayRevenue, setTodayRevenue] = useState(0);
+  const [todaySales, setTodaySales] = useState(0);
+  const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -15,10 +48,89 @@ export default function DashboardPage() {
     }
   }, [user, loading, router]);
 
-  if (loading) {
+  useEffect(() => {
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
+
+  const fetchDashboardData = async () => {
+    try {
+      // Fetch products
+      const { data: products, error: productsError } = await supabase
+        .from("zo-products")
+        .select("id, zopos_qty");
+
+      if (productsError) throw productsError;
+
+      // Calculate product stats
+      const productsData = products || [];
+      setTotalProducts(productsData.length);
+
+      let stockCount = 0;
+      let lowStock = 0;
+
+      productsData.forEach((product: Product) => {
+        const quantities = Object.values(product.zopos_qty || {});
+        const productStock = quantities.reduce((sum, qty) => sum + qty, 0);
+        stockCount += productStock;
+
+        // Low stock if total quantity is less than 5
+        if (productStock > 0 && productStock < 5) {
+          lowStock++;
+        }
+      });
+
+      setTotalStock(stockCount);
+      setLowStockItems(lowStock);
+
+      // Fetch sales
+      const { data: sales, error: salesError } = await supabase
+        .from("zopos_sales")
+        .select("*");
+
+      if (salesError) throw salesError;
+
+      const salesData = sales || [];
+      setTotalSales(salesData.length);
+
+      const revenue = salesData.reduce(
+        (sum: number, sale: Sale) => sum + sale.total_amount,
+        0,
+      );
+      setTotalRevenue(revenue);
+
+      // Today's sales
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const todaySalesData = salesData.filter((sale: Sale) => {
+        const saleDate = new Date(sale.created_at);
+        return saleDate >= today;
+      });
+
+      setTodaySales(todaySalesData.length);
+      const todayRev = todaySalesData.reduce(
+        (sum: number, sale: Sale) => sum + sale.total_amount,
+        0,
+      );
+      setTodayRevenue(todayRev);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  if (loading || dataLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F0F9FF] to-[#E0F2FE] flex items-center justify-center">
         <div className="text-center">
+          <img
+            src="/logo.png"
+            alt="Zo POS"
+            className="h-16 w-16 mx-auto mb-4 animate-pulse"
+          />
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3B82F6] mx-auto"></div>
           <p className="mt-4 text-[#0F172A]/60">Chargement...</p>
         </div>
@@ -29,58 +141,84 @@ export default function DashboardPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F0F9FF] to-[#E0F2FE]">
-      {/* Header */}
-      <header className="bg-white/70 backdrop-blur-md border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+    <AppLayout>
+      <div className="p-6 max-w-7xl mx-auto">
+        {/* App Info Header */}
+        <div className="bg-gradient-to-r from-[#3B82F6] to-[#2563EB] rounded-[24px] shadow-xl p-8 border border-white/20 mb-6 text-white">
+          <div className="flex items-center gap-4 mb-4">
+            <img
+              src="/logo.png"
+              alt="Zo POS"
+              className="h-16 w-16 bg-white rounded-[16px] p-2"
+            />
             <div>
-              <h1 className="font-serif text-3xl font-bold text-[#0F172A]">
-                Zo POS
-              </h1>
-              <p className="text-sm text-[#0F172A]/60">Dashboard</p>
+              <h1 className="font-serif text-3xl font-bold">Zo POS</h1>
+              <p className="text-white/80 text-sm">
+                Système de Point de Vente - Les Ateliers ZO
+              </p>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-[#0F172A]">
-                  {profile?.first_name} {profile?.last_name}
-                </p>
-                <p className="text-xs text-[#0F172A]/60">{profile?.email}</p>
-              </div>
-              <button
-                onClick={signOut}
-                className="px-4 py-2 bg-[#3B82F6] text-white rounded-[16px] hover:bg-[#2563EB] 
-                         transition-all duration-200 text-sm font-medium"
-              >
-                Déconnexion
-              </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            <div className="bg-white/10 backdrop-blur-sm rounded-[16px] p-4">
+              <p className="text-white/70 text-xs mb-1">Version</p>
+              <p className="font-semibold text-lg">1.0.0</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-[16px] p-4">
+              <p className="text-white/70 text-xs mb-1">Type</p>
+              <p className="font-semibold text-lg">Point de Vente</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-[16px] p-4">
+              <p className="text-white/70 text-xs mb-1">Statut</p>
+              <p className="font-semibold text-lg">✓ Actif</p>
             </div>
           </div>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Card */}
-        <div className="bg-white/70 backdrop-blur-md rounded-[24px] shadow-xl p-8 border border-white/20 mb-6">
-          <h2 className="font-serif text-2xl font-semibold text-[#0F172A] mb-2">
-            Bienvenue, {profile?.first_name} ! 👋
+        {/* Today's Stats */}
+        <div className="mb-6">
+          <h2 className="font-serif text-2xl font-bold text-[#0F172A] mb-4">
+            Aujourd&apos;hui
           </h2>
-          <p className="text-[#0F172A]/60">
-            Gérez votre boutique de mode premium depuis votre tableau de bord.
-          </p>
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white/70 backdrop-blur-md rounded-[20px] p-6 border border-white/20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-[#0F172A]/60 mb-1">
+                    Ventes du jour
+                  </p>
+                  <p className="font-serif text-3xl font-bold text-[#0F172A]">
+                    {todaySales}
+                  </p>
+                </div>
+                <div className="p-4 bg-green-500/10 rounded-[16px]">
+                  <svg
+                    className="w-8 h-8 text-green-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
 
-        {/* Quick Actions Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Products Card */}
-          <Link href="/products">
-            <div
-              className="bg-white/70 backdrop-blur-md rounded-[24px] shadow-lg p-6 border border-white/20 
-                          hover:shadow-xl hover:scale-[1.02] transition-all duration-200 cursor-pointer group"
-            >
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-[#3B82F6]/10 rounded-[16px] group-hover:bg-[#3B82F6]/20 transition-colors">
+            <div className="bg-white/70 backdrop-blur-md rounded-[20px] p-6 border border-white/20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-[#0F172A]/60 mb-1">
+                    Revenu du jour
+                  </p>
+                  <p className="font-serif text-3xl font-bold text-[#0F172A]">
+                    {formatPrice(todayRevenue)}
+                  </p>
+                </div>
+                <div className="p-4 bg-[#3B82F6]/10 rounded-[16px]">
                   <svg
                     className="w-8 h-8 text-[#3B82F6]"
                     fill="none"
@@ -91,175 +229,188 @@ export default function DashboardPage() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-[#0F172A] mb-1">
-                    Produits
-                  </h3>
-                  <p className="text-sm text-[#0F172A]/60">
-                    Gérer le catalogue
-                  </p>
-                </div>
-              </div>
-            </div>
-          </Link>
-
-          {/* Orders Card */}
-          <div
-            className="bg-white/70 backdrop-blur-md rounded-[24px] shadow-lg p-6 border border-white/20 
-                        hover:shadow-xl hover:scale-[1.02] transition-all duration-200 cursor-pointer group opacity-50"
-          >
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-[#3B82F6]/10 rounded-[16px] group-hover:bg-[#3B82F6]/20 transition-colors">
-                <svg
-                  className="w-8 h-8 text-[#3B82F6]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-[#0F172A] mb-1">Commandes</h3>
-                <p className="text-sm text-[#0F172A]/60">Bientôt disponible</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Customers Card */}
-          <div
-            className="bg-white/70 backdrop-blur-md rounded-[24px] shadow-lg p-6 border border-white/20 
-                        hover:shadow-xl hover:scale-[1.02] transition-all duration-200 cursor-pointer group opacity-50"
-          >
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-[#3B82F6]/10 rounded-[16px] group-hover:bg-[#3B82F6]/20 transition-colors">
-                <svg
-                  className="w-8 h-8 text-[#3B82F6]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-[#0F172A] mb-1">Clients</h3>
-                <p className="text-sm text-[#0F172A]/60">Bientôt disponible</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Analytics Card */}
-          <div
-            className="bg-white/70 backdrop-blur-md rounded-[24px] shadow-lg p-6 border border-white/20 
-                        hover:shadow-xl hover:scale-[1.02] transition-all duration-200 cursor-pointer group opacity-50"
-          >
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-[#3B82F6]/10 rounded-[16px] group-hover:bg-[#3B82F6]/20 transition-colors">
-                <svg
-                  className="w-8 h-8 text-[#3B82F6]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-[#0F172A] mb-1">
-                  Analytique
-                </h3>
-                <p className="text-sm text-[#0F172A]/60">Bientôt disponible</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Settings Card */}
-          <div
-            className="bg-white/70 backdrop-blur-md rounded-[24px] shadow-lg p-6 border border-white/20 
-                        hover:shadow-xl hover:scale-[1.02] transition-all duration-200 cursor-pointer group opacity-50"
-          >
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-[#3B82F6]/10 rounded-[16px] group-hover:bg-[#3B82F6]/20 transition-colors">
-                <svg
-                  className="w-8 h-8 text-[#3B82F6]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-[#0F172A] mb-1">
-                  Paramètres
-                </h3>
-                <p className="text-sm text-[#0F172A]/60">Bientôt disponible</p>
-              </div>
-            </div>
-          </div>
-
-          {/* AI Stylist Card */}
-          <div
-            className="bg-white/70 backdrop-blur-md rounded-[24px] shadow-lg p-6 border border-white/20 
-                        hover:shadow-xl hover:scale-[1.02] transition-all duration-200 cursor-pointer group opacity-50"
-          >
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-[#3B82F6]/10 rounded-[16px] group-hover:bg-[#3B82F6]/20 transition-colors">
-                <svg
-                  className="w-8 h-8 text-[#3B82F6]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-[#0F172A] mb-1">
-                  AI Stylist
-                </h3>
-                <p className="text-sm text-[#0F172A]/60">Bientôt disponible</p>
               </div>
             </div>
           </div>
         </div>
-      </main>
-    </div>
+
+        {/* Overall Stats */}
+        <div className="mb-6">
+          <h2 className="font-serif text-2xl font-bold text-[#0F172A] mb-4">
+            Vue d&apos;ensemble
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Total Products */}
+            <Link href="/products">
+              <div className="bg-white/70 backdrop-blur-md rounded-[20px] p-6 border border-white/20 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-purple-500/10 rounded-[16px]">
+                    <svg
+                      className="w-6 h-6 text-purple-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-sm text-[#0F172A]/60 mb-1">Total Produits</p>
+                <p className="font-serif text-2xl font-bold text-[#0F172A]">
+                  {totalProducts}
+                </p>
+              </div>
+            </Link>
+
+            {/* Total Stock */}
+            <Link href="/products">
+              <div className="bg-white/70 backdrop-blur-md rounded-[20px] p-6 border border-white/20 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-blue-500/10 rounded-[16px]">
+                    <svg
+                      className="w-6 h-6 text-blue-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-sm text-[#0F172A]/60 mb-1">Stock Total</p>
+                <p className="font-serif text-2xl font-bold text-[#0F172A]">
+                  {totalStock}
+                </p>
+              </div>
+            </Link>
+
+            {/* Low Stock Items */}
+            <Link href="/products">
+              <div className="bg-white/70 backdrop-blur-md rounded-[20px] p-6 border border-white/20 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-orange-500/10 rounded-[16px]">
+                    <svg
+                      className="w-6 h-6 text-orange-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-sm text-[#0F172A]/60 mb-1">Stock Faible</p>
+                <p className="font-serif text-2xl font-bold text-[#0F172A]">
+                  {lowStockItems}
+                </p>
+              </div>
+            </Link>
+
+            {/* Total Sales */}
+            <Link href="/ventes">
+              <div className="bg-white/70 backdrop-blur-md rounded-[20px] p-6 border border-white/20 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-green-500/10 rounded-[16px]">
+                    <svg
+                      className="w-6 h-6 text-green-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-sm text-[#0F172A]/60 mb-1">Total Ventes</p>
+                <p className="font-serif text-2xl font-bold text-[#0F172A]">
+                  {totalSales}
+                </p>
+              </div>
+            </Link>
+          </div>
+        </div>
+
+        {/* Revenue Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Link href="/ventes">
+            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-[24px] p-8 text-white hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Revenu Total</h3>
+                <svg
+                  className="w-8 h-8 text-white/70"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                  />
+                </svg>
+              </div>
+              <p className="font-serif text-4xl font-bold">
+                {formatPrice(totalRevenue)}
+              </p>
+              <p className="text-white/70 text-sm mt-2">
+                {totalSales} transaction{totalSales !== 1 ? "s" : ""}
+              </p>
+            </div>
+          </Link>
+
+          <Link href="/pos">
+            <div className="bg-gradient-to-br from-[#3B82F6] to-[#2563EB] rounded-[24px] p-8 text-white hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Point de Vente</h3>
+                <svg
+                  className="w-8 h-8 text-white/70"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                  />
+                </svg>
+              </div>
+              <p className="font-serif text-2xl font-bold mb-2">
+                Nouvelle Vente
+              </p>
+              <p className="text-white/70 text-sm">
+                Scanner un code-barre pour commencer
+              </p>
+            </div>
+          </Link>
+        </div>
+      </div>
+    </AppLayout>
   );
 }

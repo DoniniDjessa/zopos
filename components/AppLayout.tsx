@@ -25,6 +25,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F0F9FF] to-[#E0F2FE] flex items-center justify-center">
         <div className="text-center">
+          <img
+            src="/logo.png"
+            alt="Zo POS"
+            className="h-16 w-16 mx-auto mb-4 animate-pulse"
+          />
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3B82F6] mx-auto"></div>
           <p className="mt-4 text-[#0F172A]/60">Chargement...</p>
         </div>
@@ -62,7 +67,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 />
               </svg>
             </button>
-            <Link href="/">
+            <Link href="/" className="flex items-center gap-2">
+              <img src="/logo.png" alt="Zo POS" className="h-8 w-8" />
               <h1 className="font-serif text-2xl font-bold text-[#0F172A] cursor-pointer">
                 Zo POS
               </h1>
@@ -145,16 +151,16 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
       {/* Left Sidebar */}
       <aside
-        className={`fixed top-16 left-0 bottom-0 w-64 bg-white/70 backdrop-blur-md border-r border-white/20 
+        className={`fixed top-16 left-0 bottom-0 w-48 bg-white/70 backdrop-blur-md border-r border-white/20 
                    transition-transform duration-300 z-40 ${
                      sidebarOpen ? "translate-x-0" : "-translate-x-full"
                    }`}
       >
-        <nav className="p-4 space-y-2">
+        <nav className="p-3 space-y-1">
           {/* Home */}
           <Link href="/">
             <div
-              className={`flex items-center gap-3 px-4 py-3 rounded-[16px] transition-colors cursor-pointer group ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-[12px] transition-colors cursor-pointer group ${
                 isActive("/") &&
                 !isActive("/dashboard") &&
                 !isActive("/products")
@@ -163,7 +169,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
               }`}
             >
               <svg
-                className="w-5 h-5 text-[#3B82F6] group-hover:text-[#2563EB]"
+                className="w-4 h-4 text-[#3B82F6] group-hover:text-[#2563EB] flex-shrink-0"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -175,21 +181,23 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
                 />
               </svg>
-              <span className="font-medium text-[#0F172A]">Accueil</span>
+              <span className="text-xs font-medium text-[#0F172A]">
+                Accueil
+              </span>
             </div>
           </Link>
 
           {/* Dashboard */}
           <Link href="/dashboard">
             <div
-              className={`flex items-center gap-3 px-4 py-3 rounded-[16px] transition-colors cursor-pointer group ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-[12px] transition-colors cursor-pointer group ${
                 isActive("/dashboard")
                   ? "bg-[#3B82F6]/10"
                   : "hover:bg-[#3B82F6]/10"
               }`}
             >
               <svg
-                className="w-5 h-5 text-[#3B82F6] group-hover:text-[#2563EB]"
+                className="w-4 h-4 text-[#3B82F6] group-hover:text-[#2563EB] flex-shrink-0"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -201,21 +209,23 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                 />
               </svg>
-              <span className="font-medium text-[#0F172A]">Dashboard</span>
+              <span className="text-xs font-medium text-[#0F172A]">
+                Dashboard
+              </span>
             </div>
           </Link>
 
           {/* Products */}
           <Link href="/products">
             <div
-              className={`flex items-center gap-3 px-4 py-3 rounded-[16px] transition-colors cursor-pointer group ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-[12px] transition-colors cursor-pointer group ${
                 isActive("/products")
                   ? "bg-[#3B82F6]/10"
                   : "hover:bg-[#3B82F6]/10"
               }`}
             >
               <svg
-                className="w-5 h-5 text-[#3B82F6] group-hover:text-[#2563EB]"
+                className="w-4 h-4 text-[#3B82F6] group-hover:text-[#2563EB] flex-shrink-0"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -227,17 +237,69 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
                 />
               </svg>
-              <span className="font-medium text-[#0F172A]">Produits</span>
+              <span className="text-xs font-medium text-[#0F172A]">
+                Produits
+              </span>
+            </div>
+          </Link>
+
+          {/* POS */}
+          <Link href="/pos">
+            <div
+              className={`flex items-center gap-2 px-3 py-2 rounded-[12px] transition-colors cursor-pointer group ${
+                isActive("/pos") ? "bg-[#3B82F6]/10" : "hover:bg-[#3B82F6]/10"
+              }`}
+            >
+              <svg
+                className="w-4 h-4 text-[#3B82F6] group-hover:text-[#2563EB] flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
+                />
+              </svg>
+              <span className="text-xs font-medium text-[#0F172A]">POS</span>
+            </div>
+          </Link>
+
+          {/* Ventes */}
+          <Link href="/ventes">
+            <div
+              className={`flex items-center gap-2 px-3 py-2 rounded-[12px] transition-colors cursor-pointer group ${
+                isActive("/ventes")
+                  ? "bg-[#3B82F6]/10"
+                  : "hover:bg-[#3B82F6]/10"
+              }`}
+            >
+              <svg
+                className="w-4 h-4 text-[#3B82F6] group-hover:text-[#2563EB] flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                />
+              </svg>
+              <span className="text-xs font-medium text-[#0F172A]">Ventes</span>
             </div>
           </Link>
 
           {/* Orders */}
-          <div
-            className="flex items-center gap-3 px-4 py-3 rounded-[16px] hover:bg-[#3B82F6]/10 
+          {/* <div
+            className="flex items-center gap-2 px-3 py-2 rounded-[12px] hover:bg-[#3B82F6]/10 
                         transition-colors cursor-pointer group opacity-50"
           >
             <svg
-              className="w-5 h-5 text-[#0F172A]/40"
+              className="w-4 h-4 text-[#0F172A]/40 flex-shrink-0"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -249,16 +311,16 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
               />
             </svg>
-            <span className="font-medium text-[#0F172A]/40">Commandes</span>
-          </div>
+            <span className="text-xs font-medium text-[#0F172A]/40">Commandes</span>
+          </div> */}
 
           {/* Customers */}
-          <div
-            className="flex items-center gap-3 px-4 py-3 rounded-[16px] hover:bg-[#3B82F6]/10 
+          {/* <div
+            className="flex items-center gap-2 px-3 py-2 rounded-[12px] hover:bg-[#3B82F6]/10 
                         transition-colors cursor-pointer group opacity-50"
           >
             <svg
-              className="w-5 h-5 text-[#0F172A]/40"
+              className="w-4 h-4 text-[#0F172A]/40 flex-shrink-0"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -270,18 +332,18 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
               />
             </svg>
-            <span className="font-medium text-[#0F172A]/40">Clients</span>
-          </div>
+            <span className="text-xs font-medium text-[#0F172A]/40">Clients</span>
+          </div> */}
 
-          <div className="border-t border-[#0F172A]/10 my-4"></div>
+          {/* <div className="border-t border-[#0F172A]/10 my-2"></div> */}
 
           {/* Analytics */}
-          <div
-            className="flex items-center gap-3 px-4 py-3 rounded-[16px] hover:bg-[#3B82F6]/10 
+          {/* <div
+            className="flex items-center gap-2 px-3 py-2 rounded-[12px] hover:bg-[#3B82F6]/10 
                         transition-colors cursor-pointer group opacity-50"
           >
             <svg
-              className="w-5 h-5 text-[#0F172A]/40"
+              className="w-4 h-4 text-[#0F172A]/40 flex-shrink-0"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -293,16 +355,16 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
               />
             </svg>
-            <span className="font-medium text-[#0F172A]/40">Analytique</span>
-          </div>
+            <span className="text-xs font-medium text-[#0F172A]/40">Analytique</span>
+          </div> */}
 
           {/* AI Stylist */}
-          <div
-            className="flex items-center gap-3 px-4 py-3 rounded-[16px] hover:bg-[#3B82F6]/10 
+          {/* <div
+            className="flex items-center gap-2 px-3 py-2 rounded-[12px] hover:bg-[#3B82F6]/10 
                         transition-colors cursor-pointer group opacity-50"
           >
             <svg
-              className="w-5 h-5 text-[#0F172A]/40"
+              className="w-4 h-4 text-[#0F172A]/40 flex-shrink-0"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -314,18 +376,18 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
               />
             </svg>
-            <span className="font-medium text-[#0F172A]/40">AI Stylist</span>
-          </div>
+            <span className="text-xs font-medium text-[#0F172A]/40">AI Stylist</span>
+          </div> */}
 
-          <div className="border-t border-[#0F172A]/10 my-4"></div>
+          {/* <div className="border-t border-[#0F172A]/10 my-2"></div> */}
 
           {/* Settings */}
-          <div
-            className="flex items-center gap-3 px-4 py-3 rounded-[16px] hover:bg-[#3B82F6]/10 
+          {/* <div
+            className="flex items-center gap-2 px-3 py-2 rounded-[12px] hover:bg-[#3B82F6]/10 
                         transition-colors cursor-pointer group opacity-50"
           >
             <svg
-              className="w-5 h-5 text-[#0F172A]/40"
+              className="w-4 h-4 text-[#0F172A]/40 flex-shrink-0"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -343,15 +405,15 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
               />
             </svg>
-            <span className="font-medium text-[#0F172A]/40">Paramètres</span>
-          </div>
+            <span className="text-xs font-medium text-[#0F172A]/40">Paramètres</span>
+          </div> */}
         </nav>
       </aside>
 
       {/* Main Content Area */}
       <main
         className={`pt-16 transition-all duration-300 ${
-          sidebarOpen ? "pl-0 lg:pl-64" : "pl-0"
+          sidebarOpen ? "pl-0 lg:pl-48" : "pl-0"
         }`}
       >
         {children}
