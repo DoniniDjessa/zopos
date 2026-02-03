@@ -32,6 +32,12 @@ export default function AddProductPage() {
     category: "",
     image_url: "",
     is_active: true,
+    material: "",
+    sustainability_rating: "",
+    fit_type: "",
+    comfort_score: "",
+    insulation_score: "",
+    flexibility_score: "",
   });
 
   // Size quantities management - initialize with default sizes
@@ -80,6 +86,12 @@ export default function AddProductPage() {
         category: product.category || "",
         image_url: product.image_url || "",
         is_active: product.is_active ?? true,
+        material: product.material || "",
+        sustainability_rating: product.sustainability_rating || "",
+        fit_type: product.fit_type || "",
+        comfort_score: product.comfort_score?.toString() || "",
+        insulation_score: product.insulation_score?.toString() || "",
+        flexibility_score: product.flexibility_score?.toString() || "",
       });
 
       // Merge default sizes with any existing zopos_qty from the product
