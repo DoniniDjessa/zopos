@@ -43,7 +43,7 @@ export default function Home() {
             Bienvenue sur Zo POS
           </h1>
           <p className="text-lg text-[#0F172A]/60">
-            Système de point de vente pour votre boutique de mode
+            Système de point de vente pour votre boutique de mode.
           </p>
         </div>
 
