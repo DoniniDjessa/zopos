@@ -101,7 +101,7 @@ export default function POSPage() {
 
       if (!foundProduct || !foundSize) {
         console.log(`Barcode scanned: "${barcodeInput.trim()}" - NOT FOUND`);
-        alert(`Produit non trouvé pour le code: ${barcodeInput.trim()}`);
+        toast.error(`Produit non trouvé pour le code: ${barcodeInput.trim()}`);
         setBarcodeInput("");
         return;
       }
@@ -109,7 +109,7 @@ export default function POSPage() {
       // Check if size is in stock
       const qtyInStock = foundProduct.zopos_qty[foundSize] || 0;
       if (qtyInStock === 0) {
-        alert(`Taille ${foundSize} épuisée`);
+        toast.warning(`Taille ${foundSize} épuisée`);
         setBarcodeInput("");
         return;
       }
@@ -147,10 +147,13 @@ export default function POSPage() {
         ]);
       }
 
+      toast.success(
+        `${foundProduct.title || foundProduct.name} (${foundSize}) ajouté au panier`,
+      );
       setBarcodeInput("");
     } catch (error) {
       console.error("Error fetching product:", error);
-      alert("Erreur lors de la recherche du produit");
+      toast.error("Erreur lors de la recherche du produit");
       setBarcodeInput("");
     }
   };

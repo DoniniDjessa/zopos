@@ -253,6 +253,43 @@ export default function ProductsPage() {
     return Math.abs(hash).toString().substring(0, 6).padStart(4, "0");
   };
 
+  // Generate stock alerts for all products
+  const generateStockAlerts = () => {
+    const alerts: string[] = [];
+
+    products.forEach((product) => {
+      const productName = product.title || product.name;
+      const stock = product.zopos_qty || {};
+      const sizes = Object.keys(stock);
+
+      if (sizes.length === 0) return;
+
+      const totalStock = Object.values(stock).reduce((a, b) => a + b, 0);
+      const zeroSizes = sizes.filter((size) => stock[size] === 0);
+      const allSizesLow = sizes.every(
+        (size) => stock[size] < 3 && stock[size] > 0,
+      );
+
+      // Rupture de stock (total = 0)
+      if (totalStock === 0) {
+        alerts.push(`🔴 ${productName} - Rupture de stock`);
+      }
+      // Low stock (all sizes under 3)
+      else if (allSizesLow) {
+        alerts.push(`🟡 ${productName} - Stock faible`);
+      }
+      // Specific size out of stock
+      else if (zeroSizes.length > 0) {
+        const sizeList = zeroSizes.join(", ");
+        alerts.push(
+          `🟠 ${productName} - Rupture taille${zeroSizes.length > 1 ? "s" : ""} ${sizeList}`,
+        );
+      }
+    });
+
+    return alerts;
+  };
+
   const downloadBarcode = (product: Product) => {
     // Get all registered sizes, or use default sizes if none registered
     let allSizes = Object.keys(product.zopos_qty || {});
@@ -393,9 +430,41 @@ export default function ProductsPage() {
 
   if (!user) return null;
 
+  // Generate stock alerts based on current products
+  const stockAlerts = generateStockAlerts();
+
   return (
     <AppLayout>
       <div className="p-8">
+        {/* Stock Alerts Ticker */}
+        {stockAlerts.length > 0 && (
+          <div className="mb-6 overflow-hidden bg-gradient-to-r from-red-50 via-orange-50 to-yellow-50 border-l-4 border-red-500 rounded-none">
+            <div className="py-3 px-4">
+              <div className="relative overflow-hidden">
+                <div className="animate-marquee whitespace-nowrap inline-block">
+                  {stockAlerts.map((alert, index) => (
+                    <span
+                      key={index}
+                      className="inline-block mx-8 text-sm font-medium text-gray-800"
+                    >
+                      {alert}
+                    </span>
+                  ))}
+                  {/* Duplicate for seamless loop */}
+                  {stockAlerts.map((alert, index) => (
+                    <span
+                      key={`dup-${index}`}
+                      className="inline-block mx-8 text-sm font-medium text-gray-800"
+                    >
+                      {alert}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between">
