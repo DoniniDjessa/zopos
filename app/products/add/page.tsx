@@ -223,23 +223,23 @@ export default function AddProductPage() {
         </div>
 
         {/* Main Content */}
-        <div className="bg-white/70 backdrop-blur-md rounded-[24px] shadow-xl p-8 border border-white/20">
+        <div className="bg-white/70 backdrop-blur-md rounded-none shadow-xl p-8 border border-white/20">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-[16px] text-sm mb-6">
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-1.5 rounded-none text-sm mb-6">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Product Selector */}
-            <div className="bg-blue-50/50 border border-blue-200/50 rounded-[16px] p-4">
+            <div className="bg-blue-50/50 border border-blue-200/50 rounded-none p-4">
               <label className="block text-sm font-medium text-[#0F172A] mb-2">
                 Sélectionner un produit existant
               </label>
               <select
                 value={selectedProductId}
                 onChange={(e) => handleProductSelect(e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-[#3B82F6]/20 rounded-[16px] 
+                className="w-full px-4 py-1.5 bg-white border border-[#3B82F6]/20 rounded-none 
                          focus:outline-none focus:ring-2 focus:ring-[#3B82F6] transition-all text-[#0F172A]"
               >
                 <option value="">-- Sélectionner un produit --</option>
@@ -272,7 +272,7 @@ export default function AddProductPage() {
                     onChange={handleChange}
                     required
                     disabled={!!selectedProductId}
-                    className="w-full px-4 py-3 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-[16px] 
+                    className="w-full px-4 py-1.5 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none 
                              focus:outline-none focus:ring-2 focus:ring-[#3B82F6] transition-all text-[#0F172A]
                              disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="Ex: Chemise en lin premium"
@@ -288,7 +288,7 @@ export default function AddProductPage() {
                     value={formData.description}
                     onChange={handleChange}
                     rows={4}
-                    className="w-full px-4 py-3 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-[16px] 
+                    className="w-full px-4 py-1.5 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none 
                              focus:outline-none focus:ring-2 focus:ring-[#3B82F6] transition-all text-[#0F172A]"
                     placeholder="Décrivez votre produit..."
                   />
@@ -307,7 +307,7 @@ export default function AddProductPage() {
                       required
                       step="0.01"
                       min="0"
-                      className="w-full px-4 py-3 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-[16px] 
+                      className="w-full px-4 py-1.5 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none 
                                focus:outline-none focus:ring-2 focus:ring-[#3B82F6] transition-all text-[#0F172A]"
                       placeholder="99.99"
                     />
@@ -321,7 +321,7 @@ export default function AddProductPage() {
                       value={formData.category}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-3 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-[16px] 
+                      className="w-full px-4 py-1.5 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none 
                                focus:outline-none focus:ring-2 focus:ring-[#3B82F6] transition-all text-[#0F172A]"
                     >
                       <option value="">Sélectionner</option>
@@ -342,7 +342,7 @@ export default function AddProductPage() {
                     name="image_url"
                     value={formData.image_url}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-[16px] 
+                    className="w-full px-4 py-1.5 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none 
                              focus:outline-none focus:ring-2 focus:ring-[#3B82F6] transition-all text-[#0F172A]"
                     placeholder="https://exemple.com/image.jpg"
                   />
@@ -356,7 +356,7 @@ export default function AddProductPage() {
                 Tailles et Stock
               </h2>
 
-              <div className="bg-blue-50/50 border border-blue-200/50 rounded-[16px] p-4 mb-4">
+              <div className="bg-blue-50/50 border border-blue-200/50 rounded-none p-4 mb-4">
                 <p className="text-sm text-blue-800">
                   💡 Ajoutez les tailles disponibles et leur quantité en stock.
                   Ces quantités sont pour votre boutique (différentes de celles
@@ -370,7 +370,7 @@ export default function AddProductPage() {
                   value={newSize}
                   onChange={(e) => setNewSize(e.target.value)}
                   placeholder="Taille (ex: S, M, L)"
-                  className="flex-1 px-4 py-3 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-[16px] 
+                  className="flex-1 px-4 py-1.5 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none 
                            focus:outline-none focus:ring-2 focus:ring-[#3B82F6] transition-all text-[#0F172A]"
                 />
                 <input
@@ -379,13 +379,13 @@ export default function AddProductPage() {
                   onChange={(e) => setNewQuantity(e.target.value)}
                   placeholder="Quantité"
                   min="0"
-                  className="w-32 px-4 py-3 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-[16px] 
+                  className="w-32 px-4 py-1.5 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none 
                            focus:outline-none focus:ring-2 focus:ring-[#3B82F6] transition-all text-[#0F172A]"
                 />
                 <button
                   type="button"
                   onClick={addSize}
-                  className="px-6 py-3 bg-[#3B82F6] text-white rounded-[16px] hover:bg-[#2563EB] 
+                  className="px-6 py-1.5 bg-[#3B82F6] text-white rounded-none hover:bg-[#2563EB] 
                            transition-all duration-200 font-medium"
                 >
                   Ajouter
@@ -402,7 +402,7 @@ export default function AddProductPage() {
                     {Object.entries(sizeQuantities).map(([size, qty]) => (
                       <div
                         key={size}
-                        className="flex items-center justify-between p-3 bg-[#F0F9FF] rounded-[12px]"
+                        className="flex items-center justify-between p-3 bg-[#F0F9FF] rounded-none"
                       >
                         <span className="text-sm text-[#0F172A]">
                           <strong>{size}</strong>: {qty} unité
@@ -460,14 +460,14 @@ export default function AddProductPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-6 py-3 bg-[#3B82F6] text-white rounded-[16px] hover:bg-[#2563EB] 
+                className="flex-1 px-6 py-1.5 bg-[#3B82F6] text-white rounded-none hover:bg-[#2563EB] 
                          transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? "Création..." : "Créer le produit"}
               </button>
               <Link
                 href="/products"
-                className="px-6 py-3 bg-gray-200 text-[#0F172A] rounded-[16px] hover:bg-gray-300 
+                className="px-6 py-1.5 bg-gray-200 text-[#0F172A] rounded-none hover:bg-gray-300 
                          transition-all duration-200 font-medium text-center"
               >
                 Annuler

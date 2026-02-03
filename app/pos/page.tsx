@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import AppLayout from "@/components/AppLayout";
 import { supabase } from "@/lib/supabase/client";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import { toast } from "sonner";
 
 interface Product {
   id: string;
@@ -224,6 +226,7 @@ export default function POSPage() {
         const saleData = {
           total_amount: getTotalPrice(),
           items_count: cart.reduce((sum, item) => sum + item.quantity, 0),
+          user_id: user?.id,
           items: cart.map((item) => ({
             product_id: item.product.id,
             product_name: item.product.title || item.product.name,
@@ -246,11 +249,20 @@ export default function POSPage() {
 
         // Update inventory for each item
         for (const item of cart) {
-          const currentQty = item.product.zopos_qty[item.size] || 0;
+          // Fetch fresh product data to avoid stale inventory counts
+          const { data: freshProduct, error: fetchError } = await supabase
+            .from("zo-products")
+            .select("zopos_qty")
+            .eq("id", item.product.id)
+            .single();
+
+          if (fetchError) throw fetchError;
+
+          const currentQty = freshProduct.zopos_qty[item.size] || 0;
           const newQty = currentQty - item.quantity;
 
           const updatedQty = {
-            ...item.product.zopos_qty,
+            ...freshProduct.zopos_qty,
             [item.size]: Math.max(0, newQty),
           };
 
@@ -314,7 +326,7 @@ export default function POSPage() {
             {/* Left: Barcode Scanner & Products */}
             <div className="space-y-4">
               {/* Barcode Input */}
-              <div className="bg-white/70 backdrop-blur-md rounded-[20px] shadow-xl p-4 border border-white/20">
+              <div className="bg-white/70 backdrop-blur-md rounded-none shadow-xl p-4 border border-white/20">
                 <h2 className="font-serif text-base font-semibold text-[#0F172A] mb-3">
                   Scanner
                 </h2>
@@ -326,13 +338,13 @@ export default function POSPage() {
                       value={barcodeInput}
                       onChange={(e) => setBarcodeInput(e.target.value)}
                       placeholder="Code..."
-                      className="flex-1 px-3 py-2 text-sm bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-[12px] 
+                      className="flex-1 px-3 py-1 text-sm bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none 
                                focus:outline-none focus:ring-2 focus:ring-[#3B82F6] transition-all text-[#0F172A]"
                       autoFocus
                     />
                     <button
                       type="submit"
-                      className="px-4 py-2 text-xs bg-[#3B82F6] text-white rounded-[12px] 
+                      className="px-4 py-1 text-xs bg-[#3B82F6] text-white rounded-none 
                                hover:bg-[#2563EB] transition-all duration-200 font-medium"
                     >
                       Scanner
@@ -342,7 +354,7 @@ export default function POSPage() {
               </div>
 
               {/* Current Cart Items */}
-              <div className="bg-white/70 backdrop-blur-md rounded-[20px] shadow-xl p-4 border border-white/20">
+              <div className="bg-white/70 backdrop-blur-md rounded-none shadow-xl p-4 border border-white/20">
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="font-serif text-base font-semibold text-[#0F172A]">
                     Articles ({cart.length})
@@ -379,7 +391,7 @@ export default function POSPage() {
                     {cart.map((item, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-2 p-2 bg-[#F0F9FF] rounded-[12px]"
+                        className="flex items-center gap-2 p-2 bg-[#F0F9FF] rounded-none"
                       >
                         {/* Product Image */}
                         {item.product.image_url && (
@@ -451,7 +463,7 @@ export default function POSPage() {
 
             {/* Right: Summary & Payment */}
             <div className="space-y-4">
-              <div className="bg-white/70 backdrop-blur-md rounded-[20px] shadow-xl p-4 border border-white/20 sticky top-20">
+              <div className="bg-white/70 backdrop-blur-md rounded-none shadow-xl p-4 border border-white/20 sticky top-20">
                 <h2 className="font-serif text-base font-semibold text-[#0F172A] mb-3">
                   Résumé
                 </h2>
@@ -482,7 +494,7 @@ export default function POSPage() {
                 <button
                   onClick={processPayment}
                   disabled={cart.length === 0}
-                  className="w-full px-4 py-3 text-sm bg-[#3B82F6] text-white rounded-[12px] 
+                  className="w-full px-4 py-1.5 text-sm bg-[#3B82F6] text-white rounded-none 
                            hover:bg-[#2563EB] transition-all duration-200 font-medium
                            disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -497,12 +509,12 @@ export default function POSPage() {
       {/* Size Selection Modal */}
       {showSizeModal && selectedProduct && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/95 backdrop-blur-md rounded-[20px] shadow-2xl border border-white/20 max-w-md w-full">
+          <div className="bg-white/95 backdrop-blur-md rounded-none shadow-2xl border border-white/20 max-w-md w-full">
             <div className="p-4">
               {/* Product Image and Name */}
               <div className="mb-4">
                 {selectedProduct.image_url && (
-                  <div className="relative w-full h-48 mb-3 rounded-[16px] overflow-hidden">
+                  <div className="relative w-full h-48 mb-3 rounded-none overflow-hidden">
                     <img
                       src={selectedProduct.image_url}
                       alt={selectedProduct.name}
@@ -527,7 +539,7 @@ export default function POSPage() {
                         key={size}
                         onClick={() => setSelectedSize(size)}
                         disabled={qty === 0}
-                        className={`p-3 rounded-[12px] border-2 transition-all ${
+                        className={`p-3 rounded-none border-2 transition-all ${
                           selectedSize === size
                             ? "border-[#3B82F6] bg-[#F0F9FF]"
                             : qty > 0
@@ -550,7 +562,7 @@ export default function POSPage() {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-12 h-12 bg-[#F0F9FF] rounded-[12px] hover:bg-[#E0F2FE] transition-colors"
+                    className="w-12 h-12 bg-[#F0F9FF] rounded-none hover:bg-[#E0F2FE] transition-colors"
                   >
                     -
                   </button>
@@ -560,12 +572,12 @@ export default function POSPage() {
                     onChange={(e) =>
                       setQuantity(Math.max(1, parseInt(e.target.value) || 1))
                     }
-                    className="flex-1 px-4 py-3 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-[12px] 
+                    className="flex-1 px-4 py-1.5 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none 
                              focus:outline-none focus:ring-2 focus:ring-[#3B82F6] transition-all text-center text-[#0F172A]"
                   />
                   <button
                     onClick={() => setQuantity(quantity + 1)}
-                    className="w-12 h-12 bg-[#F0F9FF] rounded-[12px] hover:bg-[#E0F2FE] transition-colors"
+                    className="w-12 h-12 bg-[#F0F9FF] rounded-none hover:bg-[#E0F2FE] transition-colors"
                   >
                     +
                   </button>
@@ -575,7 +587,7 @@ export default function POSPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowSizeModal(false)}
-                  className="flex-1 px-6 py-3 bg-gray-200 text-[#0F172A] rounded-[16px] 
+                  className="flex-1 px-6 py-1.5 bg-gray-200 text-[#0F172A] rounded-none 
                            hover:bg-gray-300 transition-all duration-200 font-medium"
                 >
                   Annuler
@@ -583,7 +595,7 @@ export default function POSPage() {
                 <button
                   onClick={addToCart}
                   disabled={!selectedSize}
-                  className="flex-1 px-6 py-3 bg-[#3B82F6] text-white rounded-[16px] 
+                  className="flex-1 px-6 py-1.5 bg-[#3B82F6] text-white rounded-none 
                            hover:bg-[#2563EB] transition-all duration-200 font-medium
                            disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -598,7 +610,7 @@ export default function POSPage() {
       {/* Receipt Modal */}
       {showReceipt && receiptData && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-[20px] shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-none shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             {/* Receipt Content */}
             <div ref={receiptRef} className="bg-white p-8 font-mono text-black">
               {/* Header */}
@@ -693,7 +705,7 @@ export default function POSPage() {
             <div className="p-6 border-t border-gray-200 flex gap-3">
               <button
                 onClick={() => window.print()}
-                className="flex-1 px-6 py-3 bg-[#3B82F6] text-white rounded-[16px] 
+                className="flex-1 px-6 py-1.5 bg-[#3B82F6] text-white rounded-none 
                          hover:bg-[#2563EB] transition-all duration-200 font-medium"
               >
                 Imprimer
@@ -704,7 +716,7 @@ export default function POSPage() {
                   setReceiptData(null);
                   inputRef.current?.focus();
                 }}
-                className="flex-1 px-6 py-3 bg-gray-200 text-[#0F172A] rounded-[16px] 
+                className="flex-1 px-6 py-1.5 bg-gray-200 text-[#0F172A] rounded-none 
                          hover:bg-gray-300 transition-all duration-200 font-medium"
               >
                 Fermer

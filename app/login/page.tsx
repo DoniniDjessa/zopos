@@ -34,19 +34,19 @@ export default function LoginPage() {
         {/* Logo/Brand */}
         <div className="text-center mb-8">
           <h1 className="font-serif text-5xl font-bold text-[#0F172A] mb-2">
-            Zo POS
+            LA BOUTIQUE ZO
           </h1>
-          <p className="text-[#0F172A]/60 font-light">Affirmez votre style</p>
+          <p className="text-[#0F172A]/60 font-light">Les Ateliers Zo</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white/70 backdrop-blur-md rounded-[24px] shadow-xl p-8 border border-white/20">
+        <div className="bg-white/70 backdrop-blur-md rounded-none shadow-xl p-8 border border-white/20">
           <h2 className="font-serif text-3xl font-semibold text-[#0F172A] mb-6">
             Connexion
           </h2>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-[16px] text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-1.5 rounded-none text-sm">
               {error}
             </div>
           )}
@@ -66,7 +66,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-[16px] 
+                className="w-full px-4 py-1.5 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none 
                          focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent
                          transition-all duration-200 text-[#0F172A]"
                 placeholder="votre@email.com"
@@ -87,7 +87,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-[16px] 
+                className="w-full px-4 py-1.5 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none 
                          focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent
                          transition-all duration-200 text-[#0F172A]"
                 placeholder="••••••••"
@@ -108,7 +108,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#3B82F6] text-white py-3.5 rounded-[24px] font-medium
+              className="w-full bg-[#3B82F6] text-white py-1.5 rounded-none font-medium
                        hover:bg-[#2563EB] active:scale-[0.98] transition-all duration-200
                        disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#3B82F6]/25"
             >
@@ -148,8 +148,8 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Register Link */}
-          <div className="text-center">
+          {/* Register Link - Disabled, users created by admins only */}
+          {/* <div className="text-center">
             <p className="text-[#0F172A]/60">
               Pas encore de compte ?{" "}
               <Link
@@ -159,12 +159,12 @@ export default function LoginPage() {
                 Créer un compte
               </Link>
             </p>
-          </div>
+          </div> */}
         </div>
 
         {/* Footer */}
         <p className="text-center text-sm text-[#0F172A]/40 mt-6">
-          © 2026 Zo POS. Fashion meets Technology.
+          © 2026 les Ateliers Zo.
         </p>
       </div>
     </div>

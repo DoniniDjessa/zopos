@@ -51,11 +51,11 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Link href="/pos">
             <div
-              className="bg-white/70 backdrop-blur-md rounded-[20px] p-6 border border-white/20 
+              className="bg-white/70 backdrop-blur-md rounded-none p-6 border border-white/20 
                           hover:shadow-lg transition-all cursor-pointer group"
             >
               <div
-                className="w-12 h-12 bg-[#3B82F6]/10 rounded-[16px] flex items-center justify-center mb-4
+                className="w-12 h-12 bg-[#3B82F6]/10 rounded-none flex items-center justify-center mb-4
                             group-hover:bg-[#3B82F6]/20 transition-colors"
               >
                 <svg
@@ -83,11 +83,11 @@ export default function Home() {
 
           <Link href="/products">
             <div
-              className="bg-white/70 backdrop-blur-md rounded-[20px] p-6 border border-white/20 
+              className="bg-white/70 backdrop-blur-md rounded-none p-6 border border-white/20 
                           hover:shadow-lg transition-all cursor-pointer group"
             >
               <div
-                className="w-12 h-12 bg-purple-500/10 rounded-[16px] flex items-center justify-center mb-4
+                className="w-12 h-12 bg-purple-500/10 rounded-none flex items-center justify-center mb-4
                             group-hover:bg-purple-500/20 transition-colors"
               >
                 <svg
@@ -115,11 +115,11 @@ export default function Home() {
 
           <Link href="/ventes">
             <div
-              className="bg-white/70 backdrop-blur-md rounded-[20px] p-6 border border-white/20 
+              className="bg-white/70 backdrop-blur-md rounded-none p-6 border border-white/20 
                           hover:shadow-lg transition-all cursor-pointer group"
             >
               <div
-                className="w-12 h-12 bg-green-500/10 rounded-[16px] flex items-center justify-center mb-4
+                className="w-12 h-12 bg-green-500/10 rounded-none flex items-center justify-center mb-4
                             group-hover:bg-green-500/20 transition-colors"
               >
                 <svg
@@ -147,11 +147,11 @@ export default function Home() {
 
           <Link href="/dashboard">
             <div
-              className="bg-white/70 backdrop-blur-md rounded-[20px] p-6 border border-white/20 
+              className="bg-white/70 backdrop-blur-md rounded-none p-6 border border-white/20 
                           hover:shadow-lg transition-all cursor-pointer group"
             >
               <div
-                className="w-12 h-12 bg-orange-500/10 rounded-[16px] flex items-center justify-center mb-4
+                className="w-12 h-12 bg-orange-500/10 rounded-none flex items-center justify-center mb-4
                             group-hover:bg-orange-500/20 transition-colors"
               >
                 <svg

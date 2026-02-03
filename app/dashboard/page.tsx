@@ -144,12 +144,12 @@ export default function DashboardPage() {
     <AppLayout>
       <div className="p-6 max-w-7xl mx-auto">
         {/* App Info Header */}
-        <div className="bg-gradient-to-r from-[#3B82F6] to-[#2563EB] rounded-[24px] shadow-xl p-8 border border-white/20 mb-6 text-white">
+        <div className="bg-gradient-to-r from-[#3B82F6] to-[#2563EB] rounded-none shadow-xl p-8 border border-white/20 mb-6 text-white">
           <div className="flex items-center gap-4 mb-4">
             <img
               src="/logo.png"
               alt="Zo POS"
-              className="h-16 w-16 bg-white rounded-[16px] p-2"
+              className="h-16 w-16 bg-white rounded-none p-2"
             />
             <div>
               <h1 className="font-serif text-3xl font-bold">Zo POS</h1>
@@ -159,15 +159,15 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <div className="bg-white/10 backdrop-blur-sm rounded-[16px] p-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-none p-4">
               <p className="text-white/70 text-xs mb-1">Version</p>
               <p className="font-semibold text-lg">1.0.0</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-[16px] p-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-none p-4">
               <p className="text-white/70 text-xs mb-1">Type</p>
               <p className="font-semibold text-lg">Point de Vente</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-[16px] p-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-none p-4">
               <p className="text-white/70 text-xs mb-1">Statut</p>
               <p className="font-semibold text-lg">✓ Actif</p>
             </div>
@@ -180,7 +180,7 @@ export default function DashboardPage() {
             Aujourd&apos;hui
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white/70 backdrop-blur-md rounded-[20px] p-6 border border-white/20">
+            <div className="bg-white/70 backdrop-blur-md rounded-none p-6 border border-white/20">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-[#0F172A]/60 mb-1">
@@ -190,7 +190,7 @@ export default function DashboardPage() {
                     {todaySales}
                   </p>
                 </div>
-                <div className="p-4 bg-green-500/10 rounded-[16px]">
+                <div className="p-4 bg-green-500/10 rounded-none">
                   <svg
                     className="w-8 h-8 text-green-600"
                     fill="none"
@@ -208,7 +208,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="bg-white/70 backdrop-blur-md rounded-[20px] p-6 border border-white/20">
+            <div className="bg-white/70 backdrop-blur-md rounded-none p-6 border border-white/20">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-[#0F172A]/60 mb-1">
@@ -218,7 +218,7 @@ export default function DashboardPage() {
                     {formatPrice(todayRevenue)}
                   </p>
                 </div>
-                <div className="p-4 bg-[#3B82F6]/10 rounded-[16px]">
+                <div className="p-4 bg-[#3B82F6]/10 rounded-none">
                   <svg
                     className="w-8 h-8 text-[#3B82F6]"
                     fill="none"
@@ -246,9 +246,9 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Total Products */}
             <Link href="/products">
-              <div className="bg-white/70 backdrop-blur-md rounded-[20px] p-6 border border-white/20 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer">
+              <div className="bg-white/70 backdrop-blur-md rounded-none p-6 border border-white/20 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-purple-500/10 rounded-[16px]">
+                  <div className="p-3 bg-purple-500/10 rounded-none">
                     <svg
                       className="w-6 h-6 text-purple-600"
                       fill="none"
@@ -273,9 +273,9 @@ export default function DashboardPage() {
 
             {/* Total Stock */}
             <Link href="/products">
-              <div className="bg-white/70 backdrop-blur-md rounded-[20px] p-6 border border-white/20 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer">
+              <div className="bg-white/70 backdrop-blur-md rounded-none p-6 border border-white/20 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-blue-500/10 rounded-[16px]">
+                  <div className="p-3 bg-blue-500/10 rounded-none">
                     <svg
                       className="w-6 h-6 text-blue-600"
                       fill="none"
@@ -300,9 +300,9 @@ export default function DashboardPage() {
 
             {/* Low Stock Items */}
             <Link href="/products">
-              <div className="bg-white/70 backdrop-blur-md rounded-[20px] p-6 border border-white/20 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer">
+              <div className="bg-white/70 backdrop-blur-md rounded-none p-6 border border-white/20 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-orange-500/10 rounded-[16px]">
+                  <div className="p-3 bg-orange-500/10 rounded-none">
                     <svg
                       className="w-6 h-6 text-orange-600"
                       fill="none"
@@ -327,9 +327,9 @@ export default function DashboardPage() {
 
             {/* Total Sales */}
             <Link href="/ventes">
-              <div className="bg-white/70 backdrop-blur-md rounded-[20px] p-6 border border-white/20 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer">
+              <div className="bg-white/70 backdrop-blur-md rounded-none p-6 border border-white/20 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-green-500/10 rounded-[16px]">
+                  <div className="p-3 bg-green-500/10 rounded-none">
                     <svg
                       className="w-6 h-6 text-green-600"
                       fill="none"
@@ -357,7 +357,7 @@ export default function DashboardPage() {
         {/* Revenue Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Link href="/ventes">
-            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-[24px] p-8 text-white hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer">
+            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-none p-8 text-white hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Revenu Total</h3>
                 <svg
@@ -384,7 +384,7 @@ export default function DashboardPage() {
           </Link>
 
           <Link href="/pos">
-            <div className="bg-gradient-to-br from-[#3B82F6] to-[#2563EB] rounded-[24px] p-8 text-white hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer">
+            <div className="bg-gradient-to-br from-[#3B82F6] to-[#2563EB] rounded-none p-8 text-white hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Point de Vente</h3>
                 <svg

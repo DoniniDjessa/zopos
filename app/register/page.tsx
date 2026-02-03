@@ -68,13 +68,13 @@ export default function RegisterPage() {
         </div>
 
         {/* Register Card */}
-        <div className="bg-white/70 backdrop-blur-md rounded-[24px] shadow-xl p-8 border border-white/20">
+        <div className="bg-white/70 backdrop-blur-md rounded-none shadow-xl p-8 border border-white/20">
           <h2 className="font-serif text-3xl font-semibold text-[#0F172A] mb-6">
             Inscription
           </h2>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-[16px] text-sm mb-4">
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-1.5 rounded-none text-sm mb-4">
               {error}
             </div>
           )}
@@ -96,7 +96,7 @@ export default function RegisterPage() {
                   value={formData.firstName}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-[16px] 
+                  className="w-full px-4 py-1.5 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none 
                            focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent
                            transition-all duration-200 text-[#0F172A]"
                   placeholder="Jean"
@@ -117,7 +117,7 @@ export default function RegisterPage() {
                   value={formData.lastName}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-[16px] 
+                  className="w-full px-4 py-1.5 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none 
                            focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent
                            transition-all duration-200 text-[#0F172A]"
                   placeholder="Dupont"
@@ -140,7 +140,7 @@ export default function RegisterPage() {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-[16px] 
+                className="w-full px-4 py-1.5 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none 
                          focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent
                          transition-all duration-200 text-[#0F172A]"
                 placeholder="votre@email.com"
@@ -163,7 +163,7 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 required
                 minLength={8}
-                className="w-full px-4 py-3 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-[16px] 
+                className="w-full px-4 py-1.5 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none 
                          focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent
                          transition-all duration-200 text-[#0F172A]"
                 placeholder="••••••••"
@@ -189,7 +189,7 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 required
                 minLength={8}
-                className="w-full px-4 py-3 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-[16px] 
+                className="w-full px-4 py-1.5 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none 
                          focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent
                          transition-all duration-200 text-[#0F172A]"
                 placeholder="••••••••"
@@ -227,7 +227,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#3B82F6] text-white py-3.5 rounded-[24px] font-medium
+              className="w-full bg-[#3B82F6] text-white py-1.5 rounded-none font-medium
                        hover:bg-[#2563EB] active:scale-[0.98] transition-all duration-200
                        disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#3B82F6]/25 mt-2"
             >
@@ -283,7 +283,7 @@ export default function RegisterPage() {
 
         {/* Footer */}
         <p className="text-center text-sm text-[#0F172A]/40 mt-6">
-          © 2026 Zo POS. Fashion meets Technology.
+          © 2026 les Ateliers Zo
         </p>
       </div>
     </div>

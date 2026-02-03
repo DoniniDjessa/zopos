@@ -14,12 +14,32 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    const checkSuperAdmin = async () => {
+      if (profile && user) {
+        const { supabase } = await import("@/lib/supabase/client");
+        const { data } = await supabase
+          .from("zop-users")
+          .select("role")
+          .eq("id", user.id)
+          .single();
+
+        const userRole = data?.role;
+        setIsSuperAdmin(userRole === "super_admin");
+        setIsAdmin(userRole === "super_admin" || userRole === "admin");
+      }
+    };
+    checkSuperAdmin();
+  }, [profile, user]);
 
   if (loading) {
     return (
@@ -51,7 +71,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 hover:bg-[#F0F9FF] rounded-[12px] transition-colors"
+              className="p-2 hover:bg-[#F0F9FF] rounded-none transition-colors"
             >
               <svg
                 className="w-6 h-6 text-[#0F172A]"
@@ -94,7 +114,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
               <input
                 type="search"
                 placeholder="Rechercher..."
-                className="w-full pl-10 pr-4 py-2 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-[16px]
+                className="w-full pl-10 pr-4 py-1 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none
                          focus:outline-none focus:ring-2 focus:ring-[#3B82F6] transition-all text-[#0F172A]"
               />
             </div>
@@ -102,7 +122,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
           {/* Right: User Info & Actions */}
           <div className="flex items-center gap-4">
-            <button className="p-2 hover:bg-[#F0F9FF] rounded-[12px] transition-colors relative">
+            <button className="p-2 hover:bg-[#F0F9FF] rounded-none transition-colors relative">
               <svg
                 className="w-6 h-6 text-[#0F172A]"
                 fill="none"
@@ -116,7 +136,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                 />
               </svg>
-              <span className="absolute top-1 right-1 w-2 h-2 bg-[#3B82F6] rounded-full"></span>
+              <span className="absolute top-1 right-1 w-2 h-2 bg-[#3B82F6] rounded-none"></span>
             </button>
             <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[#0F172A]/10">
               <div className="text-right">
@@ -127,7 +147,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
               </div>
               <button
                 onClick={signOut}
-                className="p-2 hover:bg-red-50 rounded-[12px] transition-colors"
+                className="p-2 hover:bg-red-50 rounded-none transition-colors"
                 title="Déconnexion"
               >
                 <svg
@@ -160,7 +180,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           {/* Home */}
           <Link href="/">
             <div
-              className={`flex items-center gap-2 px-3 py-2 rounded-[12px] transition-colors cursor-pointer group ${
+              className={`flex items-center gap-2 px-3 py-1 rounded-none transition-colors cursor-pointer group ${
                 isActive("/") &&
                 !isActive("/dashboard") &&
                 !isActive("/products")
@@ -190,7 +210,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           {/* Dashboard */}
           <Link href="/dashboard">
             <div
-              className={`flex items-center gap-2 px-3 py-2 rounded-[12px] transition-colors cursor-pointer group ${
+              className={`flex items-center gap-2 px-3 py-1 rounded-none transition-colors cursor-pointer group ${
                 isActive("/dashboard")
                   ? "bg-[#3B82F6]/10"
                   : "hover:bg-[#3B82F6]/10"
@@ -218,7 +238,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           {/* Products */}
           <Link href="/products">
             <div
-              className={`flex items-center gap-2 px-3 py-2 rounded-[12px] transition-colors cursor-pointer group ${
+              className={`flex items-center gap-2 px-3 py-1 rounded-none transition-colors cursor-pointer group ${
                 isActive("/products")
                   ? "bg-[#3B82F6]/10"
                   : "hover:bg-[#3B82F6]/10"
@@ -246,7 +266,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           {/* POS */}
           <Link href="/pos">
             <div
-              className={`flex items-center gap-2 px-3 py-2 rounded-[12px] transition-colors cursor-pointer group ${
+              className={`flex items-center gap-2 px-3 py-1 rounded-none transition-colors cursor-pointer group ${
                 isActive("/pos") ? "bg-[#3B82F6]/10" : "hover:bg-[#3B82F6]/10"
               }`}
             >
@@ -270,7 +290,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           {/* Ventes */}
           <Link href="/ventes">
             <div
-              className={`flex items-center gap-2 px-3 py-2 rounded-[12px] transition-colors cursor-pointer group ${
+              className={`flex items-center gap-2 px-3 py-1 rounded-none transition-colors cursor-pointer group ${
                 isActive("/ventes")
                   ? "bg-[#3B82F6]/10"
                   : "hover:bg-[#3B82F6]/10"
@@ -293,9 +313,39 @@ export default function AppLayout({ children }: AppLayoutProps) {
             </div>
           </Link>
 
+          {/* Utilisateurs - Only for Super Admins */}
+          {isSuperAdmin && (
+            <Link href="/utilisateurs">
+              <div
+                className={`flex items-center gap-2 px-3 py-1 rounded-none transition-colors cursor-pointer group ${
+                  isActive("/utilisateurs")
+                    ? "bg-[#3B82F6]/10"
+                    : "hover:bg-[#3B82F6]/10"
+                }`}
+              >
+                <svg
+                  className="w-4 h-4 text-[#3B82F6] group-hover:text-[#2563EB] flex-shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                  />
+                </svg>
+                <span className="text-xs font-medium text-[#0F172A]">
+                  Utilisateurs
+                </span>
+              </div>
+            </Link>
+          )}
+
           {/* Orders */}
           {/* <div
-            className="flex items-center gap-2 px-3 py-2 rounded-[12px] hover:bg-[#3B82F6]/10 
+            className="flex items-center gap-2 px-3 py-1 rounded-none hover:bg-[#3B82F6]/10 
                         transition-colors cursor-pointer group opacity-50"
           >
             <svg
@@ -316,7 +366,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
           {/* Customers */}
           {/* <div
-            className="flex items-center gap-2 px-3 py-2 rounded-[12px] hover:bg-[#3B82F6]/10 
+            className="flex items-center gap-2 px-3 py-1 rounded-none hover:bg-[#3B82F6]/10 
                         transition-colors cursor-pointer group opacity-50"
           >
             <svg
@@ -339,7 +389,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
           {/* Analytics */}
           {/* <div
-            className="flex items-center gap-2 px-3 py-2 rounded-[12px] hover:bg-[#3B82F6]/10 
+            className="flex items-center gap-2 px-3 py-1 rounded-none hover:bg-[#3B82F6]/10 
                         transition-colors cursor-pointer group opacity-50"
           >
             <svg
@@ -360,7 +410,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
           {/* AI Stylist */}
           {/* <div
-            className="flex items-center gap-2 px-3 py-2 rounded-[12px] hover:bg-[#3B82F6]/10 
+            className="flex items-center gap-2 px-3 py-1 rounded-none hover:bg-[#3B82F6]/10 
                         transition-colors cursor-pointer group opacity-50"
           >
             <svg
@@ -383,7 +433,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
           {/* Settings */}
           {/* <div
-            className="flex items-center gap-2 px-3 py-2 rounded-[12px] hover:bg-[#3B82F6]/10 
+            className="flex items-center gap-2 px-3 py-1 rounded-none hover:bg-[#3B82F6]/10 
                         transition-colors cursor-pointer group opacity-50"
           >
             <svg

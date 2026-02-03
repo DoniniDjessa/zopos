@@ -197,9 +197,9 @@ export default function EditProductPage() {
         </div>
 
         {/* Main Content */}
-        <div className="bg-white/70 backdrop-blur-md rounded-[24px] shadow-xl p-8 border border-white/20">
+        <div className="bg-white/70 backdrop-blur-md rounded-none shadow-xl p-8 border border-white/20">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-[16px] text-sm mb-6">
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-1.5 rounded-none text-sm mb-6">
               {error}
             </div>
           )}
@@ -305,7 +305,7 @@ export default function EditProductPage() {
                   />
                 </div>
 
-                <div className="bg-amber-50/50 border border-amber-200/50 rounded-[16px] p-4">
+                <div className="bg-amber-50/50 border border-amber-200/50 rounded-none p-4">
                   <p className="text-sm text-amber-800">
                     ℹ️ Les informations du produit (nom, description, prix,
                     catégorie, image) sont partagées avec l'app propriétaire et
@@ -322,7 +322,7 @@ export default function EditProductPage() {
                 Tailles et Stock
               </h2>
 
-              <div className="bg-blue-50/50 border border-blue-200/50 rounded-[16px] p-4 mb-4">
+              <div className="bg-blue-50/50 border border-blue-200/50 rounded-none p-4 mb-4">
                 <p className="text-sm text-blue-800">
                   💡 Gérez les tailles et quantités pour votre boutique. Ces
                   quantités sont indépendantes de celles du propriétaire.
@@ -339,7 +339,7 @@ export default function EditProductPage() {
                     {Object.entries(sizeQuantities).map(([size, qty]) => (
                       <div
                         key={size}
-                        className="flex items-center gap-2 p-3 bg-[#F0F9FF] rounded-[12px]"
+                        className="flex items-center gap-2 p-3 bg-[#F0F9FF] rounded-none"
                       >
                         <span className="text-sm font-medium text-[#0F172A] flex-shrink-0">
                           {size}:
@@ -410,7 +410,7 @@ export default function EditProductPage() {
                   <button
                     type="button"
                     onClick={addSize}
-                    className="px-6 py-3 bg-[#3B82F6] text-white rounded-[16px] hover:bg-[#2563EB] 
+                    className="px-6 py-1.5 bg-[#3B82F6] text-white rounded-none hover:bg-[#2563EB] 
                              transition-all duration-200 font-medium"
                   >
                     Ajouter
