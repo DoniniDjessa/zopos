@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase/client";
 import AppLayout from "@/components/AppLayout";
 
 // Default sizes for products
-const DEFAULT_SIZES = ["M", "L", "XL", "2XL", "3XL", "4XL", "5XL"];
+const DEFAULT_SIZES = ["S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"];
 
 const getDefaultSizeQuantities = (): Record<string, number> => {
   const defaults: Record<string, number> = {};

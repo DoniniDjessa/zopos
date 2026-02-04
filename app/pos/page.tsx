@@ -264,7 +264,7 @@ export default function POSPage() {
       text-align: center;
       padding-bottom: 8px;
       margin-bottom: 8px;
-      border-bottom: 2px dashed #000000;
+      border-bottom: 2px dashed #9ca3af;
     }
     .header h1 {
       font-size: 14px;
@@ -280,7 +280,7 @@ export default function POSPage() {
     .section {
       margin-bottom: 8px;
       padding-bottom: 6px;
-      border-bottom: 2px dashed #000000;
+      border-bottom: 2px dashed #9ca3af;
     }
     .section-title {
       font-weight: 900;
@@ -323,7 +323,7 @@ export default function POSPage() {
     .total-section {
       margin-bottom: 8px;
       padding-bottom: 6px;
-      border-bottom: 2px solid #000000;
+      border-bottom: 2px solid #6b7280;
     }
     .total {
       display: flex;
@@ -337,7 +337,7 @@ export default function POSPage() {
       font-size: 9px;
       margin-top: 8px;
       padding-top: 6px;
-      border-top: 2px dashed #000000;
+      border-top: 2px dashed #9ca3af;
     }
     .footer p {
       margin: 3px 0;

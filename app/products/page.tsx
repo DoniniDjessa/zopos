@@ -10,7 +10,7 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import { toast } from "sonner";
 
 // Default sizes for products
-const DEFAULT_SIZES = ["M", "L", "XL", "2XL", "3XL", "4XL", "5XL"];
+const DEFAULT_SIZES = ["S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"];
 
 const getDefaultSizeQuantities = (): Record<string, number> => {
   const defaults: Record<string, number> = {};
@@ -711,7 +711,11 @@ export default function ProductsPage() {
                             ([size, qty]) => (
                               <span
                                 key={size}
-                                className="px-1 py-0.5 bg-[#F0F9FF] text-[#3B82F6] rounded text-[9px] font-medium"
+                                className={`px-1 py-0.5 rounded text-[9px] font-medium ${
+                                  qty === 0
+                                    ? "bg-red-50 text-red-600"
+                                    : "bg-[#F0F9FF] text-[#3B82F6]"
+                                }`}
                               >
                                 {size}:{qty}
                               </span>
