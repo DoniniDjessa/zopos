@@ -16,6 +16,9 @@ export interface LoginData {
   password: string;
 }
 
+// Track profile check to prevent duplicate calls
+const profileCheckCache = new Map<string, Promise<void>>();
+
 /**
  * Ensure user profile exists in zop-users table
  * Creates profile if missing to prevent PGRST116 errors
@@ -23,45 +26,62 @@ export interface LoginData {
 async function ensureUserProfile(user: User | null) {
   if (!user?.id) return;
 
-  try {
-    // Check if profile exists using maybeSingle to avoid PGRST116 error
-    const { data: profile, error: selectError } = await supabase
-      .from("zop-users")
-      .select("*")
-      .eq("id", user.id)
-      .maybeSingle();
+  // Return existing promise if already checking this user
+  const existing = profileCheckCache.get(user.id);
+  if (existing) return existing;
 
-    if (selectError) {
-      console.error("ensureUserProfile select error:", selectError);
-      return; // Don't block login on read errors
-    }
+  const checkPromise = (async () => {
+    try {
+      // Check if profile exists using maybeSingle to avoid PGRST116 error
+      const { data: profile, error: selectError } = await supabase
+        .from("zop-users")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
 
-    // Create profile if it doesn't exist
-    if (!profile) {
-      console.log("Creating missing profile for user:", user.id);
-      
-      const { error: insertError } = await supabase.from("zop-users").insert({
-        id: user.id,
-        email: user.email ?? "",
-        first_name: user.user_metadata?.first_name ?? "",
-        last_name: user.user_metadata?.last_name ?? "",
-        phone: user.user_metadata?.phone ?? null,
-        role: "user",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      });
-
-      if (insertError) {
-        console.error("ensureUserProfile insert error:", insertError);
-        // Don't throw - allow login to proceed even if profile creation fails
-      } else {
-        console.log("Profile created successfully for user:", user.id);
+      if (selectError) {
+        console.error("ensureUserProfile select error:", selectError);
+        return; // Don't block login on read errors
       }
+
+      // Create profile if it doesn't exist
+      if (!profile) {
+        console.log("Creating missing profile for user:", user.id);
+        
+        const { error: insertError } = await supabase.from("zop-users").insert({
+          id: user.id,
+          email: user.email ?? "",
+          first_name: user.user_metadata?.first_name ?? "",
+          last_name: user.user_metadata?.last_name ?? "",
+          phone: user.user_metadata?.phone ?? null,
+          role: "user",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+
+        if (insertError) {
+          // 23505 = duplicate key, means profile already exists (RLS might be blocking SELECT)
+          if (insertError.code === "23505") {
+            console.log("Profile already exists (RLS may be blocking read access)");
+          } else {
+            console.error("ensureUserProfile insert error:", insertError);
+          }
+          // Don't throw - allow login to proceed
+        } else {
+          console.log("Profile created successfully for user:", user.id);
+        }
+      }
+    } catch (error) {
+      console.error("ensureUserProfile unexpected error:", error);
+      // Don't throw - allow login to proceed
+    } finally {
+      // Clear cache after 5 seconds
+      setTimeout(() => profileCheckCache.delete(user.id), 5000);
     }
-  } catch (error) {
-    console.error("ensureUserProfile unexpected error:", error);
-    // Don't throw - allow login to proceed
-  }
+  })();
+
+  profileCheckCache.set(user.id, checkPromise);
+  return checkPromise;
 }
 
 export const authService = {
