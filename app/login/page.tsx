@@ -12,6 +12,32 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
+  const clearAllAuthData = async () => {
+    try {
+      // Clear Supabase session
+      const { supabase } = await import("@/lib/supabase/client");
+      await supabase.auth.signOut();
+      
+      // Clear all localStorage
+      localStorage.clear();
+      
+      // Clear all sessionStorage
+      sessionStorage.clear();
+      
+      // Clear all cookies
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c
+          .replace(/^ +/, "")
+          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+      
+      alert("Cache effacé. Veuillez réessayer de vous connecter.");
+      window.location.reload();
+    } catch (error) {
+      console.error("Error clearing auth data:", error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -94,16 +120,6 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Forgot Password */}
-            <div className="flex justify-end">
-              <Link
-                href="/forgot-password"
-                className="text-sm text-[#3B82F6] hover:text-[#2563EB] transition-colors"
-              >
-                Mot de passe oublié ?
-              </Link>
-            </div>
-
             {/* Submit Button */}
             <button
               type="submit"
@@ -147,6 +163,16 @@ export default function LoginPage() {
               <span className="px-4 bg-white/70 text-[#0F172A]/60">ou</span>
             </div>
           </div>
+
+          {/* Clear Cache Button */}
+          <button
+            type="button"
+            onClick={clearAllAuthData}
+            className="w-full bg-orange-500 text-white py-1.5 rounded-none font-medium
+                     hover:bg-orange-600 active:scale-[0.98] transition-all duration-200"
+          >
+            🔧 Effacer le cache et réinitialiser
+          </button>
 
           {/* Register Link - Disabled, users created by admins only */}
           {/* <div className="text-center">

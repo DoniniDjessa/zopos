@@ -290,7 +290,10 @@ export default function ProductsPage() {
     return alerts;
   };
 
-  const downloadBarcode = (product: Product) => {
+  const downloadBarcode = async (product: Product) => {
+    // Dynamically import JsBarcode
+    const JsBarcode = (await import("jsbarcode")).default;
+
     // Get all registered sizes, or use default sizes if none registered
     let allSizes = Object.keys(product.zopos_qty || {});
 
@@ -308,102 +311,79 @@ export default function ProductsPage() {
 
         // Create a canvas to draw the barcode
         const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
 
-        // Set canvas size
-        canvas.width = 400;
-        canvas.height = 180;
+        try {
+          // Generate proper Code128 barcode using JsBarcode
+          JsBarcode(canvas, shortCode, {
+            format: "CODE128",
+            width: 2,
+            height: 100,
+            displayValue: true,
+            fontSize: 20,
+            margin: 10,
+            background: "#ffffff",
+            lineColor: "#000000",
+          });
 
-        // White background
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+          // Get canvas context to add product info
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            // Extend canvas height for product name and size
+            const originalHeight = canvas.height;
+            canvas.height = originalHeight + 60;
 
-        // Generate proper barcode pattern with many bars
-        const startX = 10;
-        const startY = 20;
-        const barHeight = 100;
+            // Redraw barcode on extended canvas
+            JsBarcode(canvas, shortCode, {
+              format: "CODE128",
+              width: 2,
+              height: 100,
+              displayValue: true,
+              fontSize: 20,
+              margin: 10,
+              background: "#ffffff",
+              lineColor: "#000000",
+            });
 
-        // Create barcode pattern: use each digit to generate multiple bars
-        const barPattern: number[] = [];
+            // Add product name below barcode
+            ctx.fillStyle = "black";
+            ctx.font = "bold 14px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(
+              product.title || product.name || "Product",
+              canvas.width / 2,
+              originalHeight + 20,
+            );
 
-        // Start guard (narrow-wide-narrow)
-        barPattern.push(2, 1, 2);
-
-        // For each digit in the code, create a unique bar pattern
-        for (let i = 0; i < shortCode.length; i++) {
-          const digit = parseInt(shortCode[i]);
-          // Create different patterns for each digit (0-9)
-          // Each digit creates 7 bars with varying widths (1-3 units)
-          const patterns = [
-            [3, 2, 1, 1, 2, 1, 3], // 0
-            [2, 2, 2, 1, 1, 2, 2], // 1
-            [2, 1, 2, 2, 1, 2, 2], // 2
-            [1, 4, 1, 1, 2, 1, 2], // 3
-            [3, 1, 1, 2, 2, 1, 2], // 4
-            [1, 3, 1, 2, 2, 1, 2], // 5
-            [1, 1, 3, 2, 1, 2, 2], // 6
-            [1, 2, 1, 1, 3, 2, 2], // 7
-            [1, 1, 2, 3, 1, 2, 2], // 8
-            [3, 1, 1, 1, 2, 2, 2], // 9
-          ];
-          barPattern.push(...patterns[digit]);
-          // Add separator
-          barPattern.push(1);
-        }
-
-        // End guard (narrow-wide-narrow)
-        barPattern.push(2, 1, 2);
-
-        // Calculate total width needed for barcode
-        const totalBars = barPattern.reduce((sum, width) => sum + width, 0);
-        const availableWidth = canvas.width - 2 * startX;
-        const baseWidth = availableWidth / totalBars;
-
-        // Draw the bars
-        ctx.fillStyle = "black";
-        let currentX = startX;
-
-        barPattern.forEach((width, idx) => {
-          // Alternate between black and white bars
-          if (idx % 2 === 0) {
-            ctx.fillRect(currentX, startY, width * baseWidth, barHeight);
+            // Add size prominently below product name
+            ctx.font = "bold 18px sans-serif";
+            ctx.fillText(
+              `Taille: ${size}`,
+              canvas.width / 2,
+              originalHeight + 45,
+            );
           }
-          currentX += width * baseWidth;
-        });
 
-        // Add short code text below barcode
-        ctx.fillStyle = "black";
-        ctx.font = "20px monospace";
-        ctx.textAlign = "center";
-        ctx.fillText(shortCode, canvas.width / 2, startY + barHeight + 25);
-
-        // Add product name and size
-        ctx.font = "bold 16px sans-serif";
-        ctx.fillStyle = "black";
-        ctx.fillText(
-          `${product.title || product.name || "Product"} - Taille ${size}`,
-          canvas.width / 2,
-          startY + barHeight + 50,
-        );
-
-        // Convert to blob and download
-        canvas.toBlob((blob) => {
-          if (!blob) return;
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          const productName = (
-            product.title ||
-            product.name ||
-            "product"
-          ).replace(/\s+/g, "-");
-          a.download = `barcode-${productName}-${size}-${shortCode}.png`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        });
+          // Convert to blob and download
+          canvas.toBlob((blob) => {
+            if (!blob) return;
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            const productName = (
+              product.title ||
+              product.name ||
+              "product"
+            ).replace(/\s+/g, "-");
+            a.download = `barcode-${productName}-${size}-${shortCode}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          });
+        } catch (error) {
+          console.error("Barcode generation error:", error);
+          toast.error(`Erreur lors de la génération du code-barre`);
+        }
       }, index * 100); // Stagger downloads by 100ms
     });
 

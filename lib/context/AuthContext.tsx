@@ -45,17 +45,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user) {
+        console.log("Initial session found for user:", session.user.email);
         // Fetch user profile
         authService
           .getUserProfile(session.user.id)
           .then((profileData) => {
-            setProfile(profileData);
+            if (profileData) {
+              console.log("Profile loaded successfully:", profileData.email);
+              setProfile(profileData);
+            } else {
+              console.warn("No profile found for user:", session.user.email);
+            }
             setLoading(false);
           })
-          .catch(() => {
+          .catch((error) => {
+            console.error("Failed to load profile:", error);
             setLoading(false);
           });
       } else {
+        console.log("No initial session found");
         setLoading(false);
       }
     });
@@ -64,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", _event, session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
 
@@ -71,9 +80,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         authService
           .getUserProfile(session.user.id)
           .then((profileData) => {
-            setProfile(profileData);
+            if (profileData) {
+              console.log("Profile synced on auth change:", profileData.email);
+              setProfile(profileData);
+            } else {
+              console.warn("Profile sync failed - no data returned");
+            }
           })
-          .catch(() => {
+          .catch((error) => {
+            console.error("Profile sync error:", error);
             setProfile(null);
           });
       } else {
