@@ -431,6 +431,7 @@ export default function UtilisateursPage() {
                     className="w-full px-4 py-1.5 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none 
                              focus:outline-none focus:ring-2 focus:ring-[#3B82F6] transition-all"
                   >
+                    <option value="super_admin">Super Admin</option>
                     <option value="admin">Admin</option>
                     <option value="accueil">Accueil</option>
                     <option value="vendeur">Vendeur</option>
