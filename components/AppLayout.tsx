@@ -313,8 +313,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
             </div>
           </Link>
 
-          {/* Utilisateurs - Only for Super Admins */}
-          {isSuperAdmin && (
+          {/* Utilisateurs - For Admins and Super Admins */}
+          {isAdmin && (
             <Link href="/utilisateurs">
               <div
                 className={`flex items-center gap-2 px-3 py-1 rounded-none transition-colors cursor-pointer group ${
