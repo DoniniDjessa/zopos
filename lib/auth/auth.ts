@@ -1,4 +1,5 @@
 import { supabase } from "../supabase/client";
+import { User } from "@supabase/supabase-js";
 
 export interface RegisterData {
   email: string;
@@ -13,6 +14,54 @@ export interface RegisterData {
 export interface LoginData {
   email: string;
   password: string;
+}
+
+/**
+ * Ensure user profile exists in zop-users table
+ * Creates profile if missing to prevent PGRST116 errors
+ */
+async function ensureUserProfile(user: User | null) {
+  if (!user?.id) return;
+
+  try {
+    // Check if profile exists using maybeSingle to avoid PGRST116 error
+    const { data: profile, error: selectError } = await supabase
+      .from("zop-users")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (selectError) {
+      console.error("ensureUserProfile select error:", selectError);
+      return; // Don't block login on read errors
+    }
+
+    // Create profile if it doesn't exist
+    if (!profile) {
+      console.log("Creating missing profile for user:", user.id);
+      
+      const { error: insertError } = await supabase.from("zop-users").insert({
+        id: user.id,
+        email: user.email ?? "",
+        first_name: user.user_metadata?.first_name ?? "",
+        last_name: user.user_metadata?.last_name ?? "",
+        phone: user.user_metadata?.phone ?? null,
+        role: "user",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+      if (insertError) {
+        console.error("ensureUserProfile insert error:", insertError);
+        // Don't throw - allow login to proceed even if profile creation fails
+      } else {
+        console.log("Profile created successfully for user:", user.id);
+      }
+    }
+  } catch (error) {
+    console.error("ensureUserProfile unexpected error:", error);
+    // Don't throw - allow login to proceed
+  }
 }
 
 export const authService = {
@@ -87,6 +136,9 @@ export const authService = {
 
       if (error) throw error;
 
+      // Ensure user profile exists in zop-users table
+      await ensureUserProfile(data.user);
+
       return { user: data.user, session: data.session };
     } catch (error) {
       console.error("Login error:", error);
@@ -133,7 +185,7 @@ export const authService = {
         .from("zop-users")
         .select("*")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
