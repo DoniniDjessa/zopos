@@ -48,6 +48,24 @@ export default function POSPage() {
     inputRef.current?.focus();
   }, []);
 
+  useEffect(() => {
+    // Keep focus on input when modal closes
+    if (!showSizeModal && !showReceipt) {
+      inputRef.current?.focus();
+    }
+  }, [showSizeModal, showReceipt]);
+
+  // Refocus on any click outside input
+  useEffect(() => {
+    const handleClick = () => {
+      if (!showSizeModal && !showReceipt) {
+        inputRef.current?.focus();
+      }
+    };
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [showSizeModal, showReceipt]);
+
   const handleBarcodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!barcodeInput.trim()) return;
@@ -212,6 +230,209 @@ export default function POSPage() {
       return kPrice % 1 === 0 ? `${kPrice}k` : `${kPrice.toFixed(1)}k`;
     }
     return price.toString();
+  };
+
+  const printReceipt = (receiptData: any) => {
+    const receiptHTML = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reçu de Vente</title>
+  <style>
+    @page {
+      size: 80mm auto;
+      margin: 0;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Courier New', 'Courier', monospace;
+      font-size: 12px;
+      line-height: 1.3;
+      padding: 10px 12px 40px 12px;
+      max-width: 80mm;
+      margin: 0 auto;
+      color: #000000;
+      background: #ffffff;
+    }
+    .header {
+      text-align: center;
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+      border-bottom: 2px dashed #000000;
+    }
+    .header h1 {
+      font-size: 14px;
+      font-weight: 900;
+      margin-bottom: 4px;
+      letter-spacing: 0.5px;
+    }
+    .header p {
+      font-size: 9px;
+      font-weight: 700;
+      margin: 2px 0;
+    }
+    .section {
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 2px dashed #000000;
+    }
+    .section-title {
+      font-weight: 900;
+      font-size: 11px;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 3px;
+      font-size: 11px;
+    }
+    .info-label {
+      font-weight: 700;
+    }
+    .info-value {
+      font-weight: 600;
+    }
+    .item {
+      margin-bottom: 8px;
+      font-size: 10px;
+    }
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .item-details {
+      margin-left: 8px;
+      font-weight: 600;
+      color: #000000;
+    }
+    .item-detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2px;
+    }
+    .total-section {
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #000000;
+    }
+    .total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      font-weight: 900;
+      margin-top: 4px;
+    }
+    .footer {
+      text-align: center;
+      font-size: 9px;
+      margin-top: 8px;
+      padding-top: 6px;
+      border-top: 2px dashed #000000;
+    }
+    .footer p {
+      margin: 3px 0;
+      font-weight: 600;
+    }
+    .footer .message {
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    @media print {
+      body {
+        padding: 10px;
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>LES ATELIERS ZO</h1>
+    <p>+225 07 49 235 896 | +225 05 55 486 130</p>
+    <p>www.lesatelierszo.com</p>
+  </div>
+
+  <div class="section">
+    <div class="info-row">
+      <span class="info-label">N° Commande:</span>
+      <span class="info-value">#${receiptData.id.substring(0, 8).toUpperCase()}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Date:</span>
+      <span class="info-value">${new Date(receiptData.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Heure:</span>
+      <span class="info-value">${new Date(receiptData.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">ARTICLES</div>
+    ${receiptData.items.map((item: any) => `
+      <div class="item">
+        <div class="item-header">
+          <span>${item.title}</span>
+          <span>${item.price.toLocaleString('fr-FR')} FCFA</span>
+        </div>
+        <div class="item-details">
+          Taille: ${item.size}
+        </div>
+        <div class="item-details">
+          <div class="item-detail-row">
+            <span>Qté: ${item.quantity}</span>
+            <span>${(item.price * item.quantity).toLocaleString('fr-FR')} FCFA</span>
+          </div>
+        </div>
+      </div>
+    `).join('')}
+  </div>
+
+  <div class="total-section">
+    <div class="total">
+      <span>TOTAL</span>
+      <span>${receiptData.total.toLocaleString('fr-FR')} FCFA</span>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p class="message">Merci pour votre achat !</p>
+    <p>Transaction terminée avec succès.</p>
+    <p style="margin-top: 8px; line-height: 1.4;">📍 Riviera CIAD après la Pharmacie des jardins d'Eden, immeuble de la Société générale, Cocody Rue F44</p>
+  </div>
+</body>
+</html>
+    `;
+
+    const printWindow = window.open('', '_blank', 'width=300,height=600');
+    if (printWindow) {
+      printWindow.document.write(receiptHTML);
+      printWindow.document.close();
+      
+      printWindow.onload = () => {
+        setTimeout(() => {
+          printWindow.focus();
+          printWindow.print();
+        }, 100);
+      };
+      
+      setTimeout(() => {
+        if (printWindow.document.readyState === 'complete') {
+          printWindow.focus();
+          printWindow.print();
+        }
+      }, 500);
+    }
   };
 
   const clearCart = () => {
@@ -612,30 +833,41 @@ export default function POSPage() {
 
       {/* Receipt Modal */}
       {showReceipt && receiptData && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-none shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div 
+          id="receipt-modal"
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+          onClick={() => {
+            setShowReceipt(false);
+            setReceiptData(null);
+            inputRef.current?.focus();
+          }}
+        >
+          <div 
+            className="bg-white rounded-none shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Receipt Content */}
-            <div ref={receiptRef} className="bg-white p-8 font-mono text-black">
+            <div id="receipt-content" ref={receiptRef} className="bg-white p-8 font-mono text-black">
               {/* Header */}
-              <div className="text-center pb-4 mb-4 border-b-2 border-dashed border-gray-400">
-                <h1 className="text-2xl font-bold mb-2">LES ATELIERS ZO</h1>
-                <p className="text-xs text-gray-600">
+              <div className="text-center pb-4 mb-4 border-b-2 border-dashed border-black">
+                <h1 className="text-2xl font-black mb-2">LES ATELIERS ZO</h1>
+                <p className="text-xs text-black font-bold">
                   +225 07 49 235 896 | +225 05 55 486 130
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-black font-semibold mt-1">
                   www.lesatelierszo.com
                 </p>
               </div>
 
               {/* Order Info */}
-              <div className="text-sm mb-4 pb-4 border-b border-dashed border-gray-300">
+              <div className="text-sm mb-4 pb-4 border-b border-dashed border-black">
                 <div className="flex justify-between mb-1">
-                  <span className="font-semibold">N° Commande:</span>
-                  <span>#{receiptData.id.substring(0, 8).toUpperCase()}</span>
+                  <span className="font-bold">N° Commande:</span>
+                  <span className="font-semibold">#{receiptData.id.substring(0, 8).toUpperCase()}</span>
                 </div>
                 <div className="flex justify-between mb-1">
-                  <span className="font-semibold">Date:</span>
-                  <span>
+                  <span className="font-bold">Date:</span>
+                  <span className="font-semibold">
                     {new Date(receiptData.created_at).toLocaleDateString(
                       "fr-FR",
                       {
@@ -647,8 +879,8 @@ export default function POSPage() {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-semibold">Heure:</span>
-                  <span>
+                  <span className="font-bold">Heure:</span>
+                  <span className="font-semibold">
                     {new Date(receiptData.created_at).toLocaleTimeString(
                       "fr-FR",
                       {
@@ -661,18 +893,18 @@ export default function POSPage() {
               </div>
 
               {/* Items */}
-              <div className="mb-4 pb-4 border-b border-dashed border-gray-300">
-                <h2 className="font-bold text-sm mb-3">ARTICLES</h2>
+              <div className="mb-4 pb-4 border-b border-dashed border-black">
+                <h2 className="font-black text-sm mb-3">ARTICLES</h2>
                 {receiptData.items.map((item: any, index: number) => (
                   <div key={index} className="mb-3 text-xs">
-                    <div className="flex justify-between font-semibold mb-1">
+                    <div className="flex justify-between font-bold mb-1">
                       <span>{item.title}</span>
                       <span>{item.price.toLocaleString("fr-FR")} FCFA</span>
                     </div>
-                    <div className="ml-2 text-gray-600">
+                    <div className="ml-2 text-black font-semibold">
                       Taille: {item.size}
                     </div>
-                    <div className="flex justify-between ml-2 text-gray-600">
+                    <div className="flex justify-between ml-2 text-black font-semibold">
                       <span>Qté: {item.quantity}</span>
                       <span className="font-semibold">
                         {(item.price * item.quantity).toLocaleString("fr-FR")}{" "}
@@ -684,19 +916,19 @@ export default function POSPage() {
               </div>
 
               {/* Total */}
-              <div className="mb-4 pb-4 border-b-2 border-solid border-gray-800">
-                <div className="flex justify-between text-lg font-bold">
+              <div className="mb-4 pb-4 border-b-2 border-solid border-black">
+                <div className="flex justify-between text-lg font-black">
                   <span>TOTAL</span>
                   <span>{receiptData.total.toLocaleString("fr-FR")} FCFA</span>
                 </div>
               </div>
 
               {/* Footer */}
-              <div className="text-center text-xs text-gray-500 mt-4">
-                <p className="mb-1">Merci pour votre achat !</p>
-                <p>Transaction terminée avec succès.</p>
-                <div className="border-t border-dashed border-gray-300 mt-3 pt-3">
-                  <p className="leading-relaxed">
+              <div className="text-center text-xs text-black mt-4">
+                <p className="mb-1 font-bold">Merci pour votre achat !</p>
+                <p className="font-semibold">Transaction terminée avec succès.</p>
+                <div className="border-t border-dashed border-black mt-3 pt-3">
+                  <p className="leading-relaxed font-semibold">
                     📍 Riviera CIAD après la Pharmacie des jardins d&apos;Eden,
                     immeuble de la Société générale, Cocody Rue F44
                   </p>
@@ -704,25 +936,26 @@ export default function POSPage() {
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="p-6 border-t border-gray-200 flex gap-3">
+            {/* Print Button */}
+            <div className="p-4 border-t border-gray-200 flex justify-center no-print">
               <button
-                onClick={() => window.print()}
-                className="flex-1 px-6 py-1.5 bg-[#3B82F6] text-white rounded-none 
-                         hover:bg-[#2563EB] transition-all duration-200 font-medium"
+                onClick={() => printReceipt(receiptData)}
+                className="p-3 text-[#3B82F6] hover:text-[#2563EB] transition-colors"
+                title="Imprimer"
               >
-                Imprimer
-              </button>
-              <button
-                onClick={() => {
-                  setShowReceipt(false);
-                  setReceiptData(null);
-                  inputRef.current?.focus();
-                }}
-                className="flex-1 px-6 py-1.5 bg-gray-200 text-[#0F172A] rounded-none 
-                         hover:bg-gray-300 transition-all duration-200 font-medium"
-              >
-                Fermer
+                <svg
+                  className="w-8 h-8"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                  />
+                </svg>
               </button>
             </div>
           </div>
