@@ -199,7 +199,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       >
         <nav className="p-3 space-y-1">
           {/* Home */}
-          <Link href="/">
+          <Link href="/" onClick={() => setSidebarOpen(false)}>
             <div
               className={`flex items-center gap-2 px-3 py-1 rounded-none transition-colors cursor-pointer group ${
                 isActive("/") &&
@@ -229,7 +229,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           </Link>
 
           {/* Dashboard */}
-          <Link href="/dashboard">
+          <Link href="/dashboard" onClick={() => setSidebarOpen(false)}>
             <div
               className={`flex items-center gap-2 px-3 py-1 rounded-none transition-colors cursor-pointer group ${
                 isActive("/dashboard")
@@ -257,7 +257,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           </Link>
 
           {/* Products */}
-          <Link href="/products">
+          <Link href="/products" onClick={() => setSidebarOpen(false)}>
             <div
               className={`flex items-center gap-2 px-3 py-1 rounded-none transition-colors cursor-pointer group ${
                 isActive("/products")
@@ -285,7 +285,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           </Link>
 
           {/* POS */}
-          <Link href="/pos">
+          <Link href="/pos" onClick={() => setSidebarOpen(false)}>
             <div
               className={`flex items-center gap-2 px-3 py-1 rounded-none transition-colors cursor-pointer group ${
                 isActive("/pos") ? "bg-[#3B82F6]/10" : "hover:bg-[#3B82F6]/10"
@@ -309,7 +309,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           </Link>
 
           {/* Ventes */}
-          <Link href="/ventes">
+          <Link href="/ventes" onClick={() => setSidebarOpen(false)}>
             <div
               className={`flex items-center gap-2 px-3 py-1 rounded-none transition-colors cursor-pointer group ${
                 isActive("/ventes")
@@ -336,7 +336,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
           {/* Utilisateurs - For Admins and Super Admins */}
           {isAdmin && (
-            <Link href="/utilisateurs">
+            <Link href="/utilisateurs" onClick={() => setSidebarOpen(false)}>
               <div
                 className={`flex items-center gap-2 px-3 py-1 rounded-none transition-colors cursor-pointer group ${
                   isActive("/utilisateurs")
