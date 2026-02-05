@@ -379,6 +379,10 @@ export default function ProductsPage() {
             const originalHeight = canvas.height;
             canvas.height = originalHeight + totalTextHeight;
 
+            // Fill entire canvas with white background first
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
             // Redraw barcode on extended canvas
             JsBarcode(canvas, shortCode, {
               format: "CODE128",
@@ -396,6 +400,16 @@ export default function ProductsPage() {
             ctx.font = "bold 8px sans-serif";
             ctx.textAlign = "center";
             let yPosition = originalHeight + 8;
+
+            console.log("Drawing barcode text:", {
+              productLines,
+              sizeLines,
+              originalHeight,
+              totalTextHeight,
+              canvasHeight: canvas.height,
+              canvasWidth: canvas.width,
+            });
+
             productLines.forEach((line) => {
               ctx.fillText(line, canvas.width / 2, yPosition);
               yPosition += lineHeight;
