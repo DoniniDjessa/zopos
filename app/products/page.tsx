@@ -328,9 +328,56 @@ export default function ProductsPage() {
           // Get canvas context to add product info
           const ctx = canvas.getContext("2d");
           if (ctx) {
+            // Helper function to wrap text
+            const wrapText = (
+              text: string,
+              maxWidth: number,
+              fontSize: number,
+              fontWeight: string = "bold",
+            ): string[] => {
+              ctx.font = `${fontWeight} ${fontSize}px sans-serif`;
+              const words = text.split(" ");
+              const lines: string[] = [];
+              let currentLine = "";
+
+              words.forEach((word) => {
+                const testLine = currentLine ? `${currentLine} ${word}` : word;
+                const metrics = ctx.measureText(testLine);
+                if (metrics.width > maxWidth && currentLine) {
+                  lines.push(currentLine);
+                  currentLine = word;
+                } else {
+                  currentLine = testLine;
+                }
+              });
+              if (currentLine) {
+                lines.push(currentLine);
+              }
+              return lines;
+            };
+
+            // Calculate text wrapping - using small font (8px)
+            const maxWidth = canvas.width - 20; // 10px margin on each side
+            const productText = product.title || product.name || "Product";
+            const productLines = wrapText(productText, maxWidth, 8);
+
+            // Size will always be on separate line(s)
+            const sizeText = `TAILLE ${size}`;
+            const sizeLines = wrapText(sizeText, maxWidth, 8);
+
+            // Calculate required height with smaller font
+            const lineHeight = 10;
+            const sizeLineHeight = 10;
+            const spacingBetweenSections = 2;
+            const totalTextHeight =
+              productLines.length * lineHeight +
+              spacingBetweenSections +
+              sizeLines.length * sizeLineHeight +
+              6; // Bottom padding
+
             // Extend canvas height for product name and size
             const originalHeight = canvas.height;
-            canvas.height = originalHeight + 60;
+            canvas.height = originalHeight + totalTextHeight;
 
             // Redraw barcode on extended canvas
             JsBarcode(canvas, shortCode, {
@@ -344,23 +391,23 @@ export default function ProductsPage() {
               lineColor: "#000000",
             });
 
-            // Add product name below barcode
+            // Add product name below barcode (wrapped) - small 8px font
             ctx.fillStyle = "black";
-            ctx.font = "bold 14px sans-serif";
+            ctx.font = "bold 8px sans-serif";
             ctx.textAlign = "center";
-            ctx.fillText(
-              product.title || product.name || "Product",
-              canvas.width / 2,
-              originalHeight + 20,
-            );
+            let yPosition = originalHeight + 8;
+            productLines.forEach((line) => {
+              ctx.fillText(line, canvas.width / 2, yPosition);
+              yPosition += lineHeight;
+            });
 
-            // Add size prominently below product name
-            ctx.font = "bold 18px sans-serif";
-            ctx.fillText(
-              `Taille: ${size}`,
-              canvas.width / 2,
-              originalHeight + 45,
-            );
+            // Add size on separate line below product name - small 8px font
+            ctx.font = "bold 8px sans-serif";
+            yPosition += 2; // Small gap between title and size
+            sizeLines.forEach((line) => {
+              ctx.fillText(line, canvas.width / 2, yPosition);
+              yPosition += sizeLineHeight;
+            });
           }
 
           // Convert to blob and download
