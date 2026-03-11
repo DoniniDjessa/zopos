@@ -37,12 +37,16 @@ interface Product {
   material: string;
   sustainability_rating: string;
   zopos_qty: Record<string, number>; // OUR quantities: {"S": 10, "M": 5, "L": 3}
+  barcode_overrides?: Record<string, string>; // Manual barcode overrides: {"M": "110831"}
   sizeQuantities: Record<string, number>; // Other app's quantities (don't touch)
   sizes: string[];
   colors: string[];
   in_stock: boolean;
   image_url: string;
   is_active: boolean;
+  is_best_seller?: boolean;
+  is_current_offer?: boolean;
+  is_kids_product?: boolean;
   created_at: string;
 }
 
@@ -57,6 +61,7 @@ export default function ProductsPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [qtyUpdates, setQtyUpdates] = useState<Record<string, number>>({});
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<"adultes" | "enfants">("adultes");
   const [detailsTab, setDetailsTab] = useState<"product" | "sales">("product");
   const [productSales, setProductSales] = useState<any[]>([]);
   const [loadingSales, setLoadingSales] = useState(false);
@@ -128,8 +133,14 @@ export default function ProductsPage() {
     });
   };
 
-  // Filter products based on search
-  const filteredProducts = products.filter((product) =>
+  // Filter products based on active tab + search
+  const tabFilteredProducts = products.filter((product) =>
+    activeTab === "enfants"
+      ? product.is_kids_product === true
+      : !product.is_kids_product,
+  );
+
+  const filteredProducts = tabFilteredProducts.filter((product) =>
     searchQuery
       ? (product.title || product.name)
           .toLowerCase()
@@ -235,6 +246,97 @@ export default function ProductsPage() {
     }));
   };
 
+  const toggleBestSeller = async (product: Product) => {
+    const newValue = !product.is_best_seller;
+    // Optimistic update
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === product.id ? { ...p, is_best_seller: newValue } : p,
+      ),
+    );
+    try {
+      const { error } = await supabase
+        .from("zo-products")
+        .update({ is_best_seller: newValue })
+        .eq("id", product.id);
+      if (error) throw error;
+      toast.success(
+        newValue
+          ? `⭐ ${product.title || product.name} ajouté aux meilleurs produits`
+          : `${product.title || product.name} retiré des meilleurs produits`,
+      );
+    } catch (error) {
+      // Revert on failure
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === product.id ? { ...p, is_best_seller: !newValue } : p,
+        ),
+      );
+      console.error("Error toggling best seller:", error);
+      toast.error("Erreur lors de la mise à jour");
+    }
+  };
+
+  const toggleCurrentOffer = async (product: Product) => {
+    const newValue = !product.is_current_offer;
+    // Optimistic update
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === product.id ? { ...p, is_current_offer: newValue } : p,
+      ),
+    );
+    try {
+      const { error } = await supabase
+        .from("zo-products")
+        .update({ is_current_offer: newValue })
+        .eq("id", product.id);
+      if (error) throw error;
+      toast.success(
+        newValue
+          ? `🏷️ ${product.title || product.name} ajouté aux offres du moment`
+          : `${product.title || product.name} retiré des offres du moment`,
+      );
+    } catch (error) {
+      // Revert on failure
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === product.id ? { ...p, is_current_offer: !newValue } : p,
+        ),
+      );
+      console.error("Error toggling current offer:", error);
+      toast.error("Erreur lors de la mise à jour");
+    }
+  };
+
+  const toggleKidsProduct = async (product: Product) => {
+    const newValue = !product.is_kids_product;
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === product.id ? { ...p, is_kids_product: newValue } : p,
+      ),
+    );
+    try {
+      const { error } = await supabase
+        .from("zo-products")
+        .update({ is_kids_product: newValue })
+        .eq("id", product.id);
+      if (error) throw error;
+      toast.success(
+        newValue
+          ? `🧒 ${product.title || product.name} déplacé vers Enfants`
+          : `${product.title || product.name} déplacé vers Adultes`,
+      );
+    } catch (error) {
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === product.id ? { ...p, is_kids_product: !newValue } : p,
+        ),
+      );
+      console.error("Error toggling kids product:", error);
+      toast.error("Erreur lors de la mise à jour");
+    }
+  };
+
   // Helper function to generate short code from productId + size
   const generateShortCode = (productId: string, size: string): string => {
     // Use a more robust hash by including size multiple times for better differentiation
@@ -251,6 +353,16 @@ export default function ProductsPage() {
       .reduce((acc, c) => acc + c.charCodeAt(0), 0);
     hash = hash + sizeOffset * 1000;
     return Math.abs(hash).toString().substring(0, 6).padStart(4, "0");
+  };
+
+  // Helper function to get the barcode (override or generated)
+  const getBarcodeCode = (product: Product, size: string): string => {
+    // 1. Check if an override exists for this specific size
+    if (product.barcode_overrides && product.barcode_overrides[size]) {
+      return product.barcode_overrides[size];
+    }
+    // 2. Fallback to the original hash generation
+    return generateShortCode(product.id, size);
   };
 
   // Generate stock alerts for all products
@@ -307,7 +419,7 @@ export default function ProductsPage() {
     // Generate and download a barcode for each size
     allSizes.forEach((size, index) => {
       setTimeout(() => {
-        const shortCode = generateShortCode(product.id, size);
+        const shortCode = getBarcodeCode(product, size);
 
         // Create a canvas to draw the barcode
         const canvas = document.createElement("canvas");
@@ -447,7 +559,7 @@ export default function ProductsPage() {
 
         {/* Header */}
         <div className="mb-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="font-serif text-3xl font-bold text-[#0F172A]">
                 Produits
@@ -476,6 +588,36 @@ export default function ProductsPage() {
                 />
               </svg>
               Nouveau Produit
+            </button>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab("adultes")}
+              className={`px-6 py-3 font-medium text-sm transition-colors relative ${
+                activeTab === "adultes"
+                  ? "text-[#3B82F6]"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Adultes
+              {activeTab === "adultes" && (
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#3B82F6]" />
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab("enfants")}
+              className={`px-6 py-3 font-medium text-sm transition-colors relative ${
+                activeTab === "enfants"
+                  ? "text-[#3B82F6]"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Enfants
+              {activeTab === "enfants" && (
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#3B82F6]" />
+              )}
             </button>
           </div>
         </div>
@@ -629,28 +771,115 @@ export default function ProductsPage() {
                     </div>
                   )}
 
-                  {/* Barcode Download Button */}
-                  <button
-                    onClick={() => downloadBarcode(product)}
-                    className="absolute top-2 left-2 p-2 bg-white/90 backdrop-blur-sm rounded-none 
-                             hover:bg-white transition-all duration-200 shadow-md"
-                    title="Télécharger les codes-barres (par taille)"
-                  >
-                    <svg
-                      className="w-4 h-4 text-[#0F172A]"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                  {/* Left side: barcode + best-seller + current-offer */}
+                  <div className="absolute top-2 left-2 flex flex-col gap-1.5">
+                    {/* Barcode Download Button */}
+                    <button
+                      onClick={() => downloadBarcode(product)}
+                      className="p-2 bg-white/90 backdrop-blur-sm rounded-none 
+                               hover:bg-white transition-all duration-200 shadow-md"
+                      title="Télécharger les codes-barres (par taille)"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
-                      />
-                    </svg>
-                  </button>
+                      <svg
+                        className="w-4 h-4 text-[#0F172A]"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
+                        />
+                      </svg>
+                    </button>
 
+                    {/* Best Seller Toggle */}
+                    <button
+                      onClick={() => toggleBestSeller(product)}
+                      title={
+                        product.is_best_seller
+                          ? "Retirer des meilleurs produits"
+                          : "Ajouter aux meilleurs produits"
+                      }
+                      className={`p-2 rounded-none flex items-center justify-center transition-all duration-200 shadow-md ${
+                        product.is_best_seller
+                          ? "bg-[#3B82F6] text-white hover:bg-[#2563EB]"
+                          : "bg-white/90 text-gray-400 hover:bg-[#F0F9FF] hover:text-[#3B82F6]"
+                      }`}
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        viewBox="0 0 24 24"
+                        fill={product.is_best_seller ? "currentColor" : "none"}
+                        stroke="currentColor"
+                        strokeWidth={product.is_best_seller ? 0 : 1.8}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                        />
+                      </svg>
+                    </button>
+
+                    {/* Current Offer Toggle */}
+                    <button
+                      onClick={() => toggleCurrentOffer(product)}
+                      title={
+                        product.is_current_offer
+                          ? "Retirer des offres du moment"
+                          : "Ajouter aux offres du moment"
+                      }
+                      className={`p-2 rounded-none flex items-center justify-center transition-all duration-200 shadow-md ${
+                        product.is_current_offer
+                          ? "bg-[#3B82F6] text-white hover:bg-[#2563EB]"
+                          : "bg-white/90 text-gray-400 hover:bg-[#F0F9FF] hover:text-[#3B82F6]"
+                      }`}
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        viewBox="0 0 24 24"
+                        fill={product.is_current_offer ? "currentColor" : "none"}
+                        stroke="currentColor"
+                        strokeWidth={product.is_current_offer ? 0 : 1.8}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"
+                        />
+                      </svg>
+                    </button>
+
+                    {/* Kids Product Toggle */}
+                    <button
+                      onClick={() => toggleKidsProduct(product)}
+                      title={
+                        product.is_kids_product
+                          ? "Déplacer vers Adultes"
+                          : "Déplacer vers Enfants"
+                      }
+                      className={`p-2 rounded-none flex items-center justify-center transition-all duration-200 shadow-md ${
+                        product.is_kids_product
+                          ? "bg-[#3B82F6] text-white hover:bg-[#2563EB]"
+                          : "bg-white/90 text-gray-400 hover:bg-[#F0F9FF] hover:text-[#3B82F6]"
+                      }`}
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Right side: Active/Inactive badge only */}
                   <div className="absolute top-2 right-2">
                     <span
                       className={`px-3 py-1 rounded-none text-xs font-medium ${

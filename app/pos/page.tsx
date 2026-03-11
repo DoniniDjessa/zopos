@@ -14,6 +14,7 @@ interface Product {
   title?: string;
   price: number;
   zopos_qty: Record<string, number>;
+  barcode_overrides?: Record<string, string>;
   image_url: string;
 }
 
@@ -85,30 +86,38 @@ export default function POSPage() {
       for (const p of allProducts || []) {
         const sizes = Object.keys(p.zopos_qty || {});
         for (const size of sizes) {
-          // Use the same improved hash function as in products page
-          const combined = `${p.id}:SIZE:${size}:${size.length}`;
-          let hash = 0;
-          for (let i = 0; i < combined.length; i++) {
-            const char = combined.charCodeAt(i);
-            hash = (hash << 5) - hash + char;
-            hash = hash & hash;
+          let shortCode = "";
+          
+          // 1. Check if the product has a manual override for this size
+          if (p.barcode_overrides && p.barcode_overrides[size]) {
+            shortCode = p.barcode_overrides[size];
+          } else {
+            // 2. Otherwise use the same improved hash function as in products page
+            const combined = `${p.id}:SIZE:${size}:${size.length}`;
+            let hash = 0;
+            for (let i = 0; i < combined.length; i++) {
+              const char = combined.charCodeAt(i);
+              hash = (hash << 5) - hash + char;
+              hash = hash & hash;
+            }
+            // Add size-specific offset to ensure different codes
+            const sizeOffset = size
+              .split("")
+              .reduce((acc, c) => acc + c.charCodeAt(0), 0);
+            hash = hash + sizeOffset * 1000;
+            shortCode = Math.abs(hash)
+              .toString()
+              .substring(0, 6)
+              .padStart(4, "0");
           }
-          // Add size-specific offset to ensure different codes
-          const sizeOffset = size
-            .split("")
-            .reduce((acc, c) => acc + c.charCodeAt(0), 0);
-          hash = hash + sizeOffset * 1000;
-          const shortCode = Math.abs(hash)
-            .toString()
-            .substring(0, 6)
-            .padStart(4, "0");
 
           // Debug: log generated codes
           console.log(
-            `Product: ${p.title || p.name} (${p.id}), Size: ${size}, Code: ${shortCode}`,
+            `Product: ${p.title || p.name} (${p.id}), Size: ${size}, GeneratedCode: ${shortCode}, Override: ${p.barcode_overrides?.[size] || "None"}`,
           );
 
-          if (shortCode === barcodeInput.trim()) {
+          // Force strict string comparison
+          if (String(shortCode).trim() === String(barcodeInput).trim()) {
             foundProduct = p;
             foundSize = size;
             break;

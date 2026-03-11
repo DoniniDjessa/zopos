@@ -257,7 +257,7 @@ export default function AddProductPage() {
                 <option value="">-- Sélectionner un produit --</option>
                 {existingProducts.map((product) => (
                   <option key={product.id} value={product.id}>
-                    {product.name} - {product.price}€
+                    {product.name} - {product.price} FCFA
                   </option>
                 ))}
               </select>
@@ -309,7 +309,7 @@ export default function AddProductPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-[#0F172A] mb-2">
-                      Prix (€) *
+                      Prix (FCFA) *
                     </label>
                     <input
                       type="number"
@@ -452,20 +452,25 @@ export default function AddProductPage() {
             </div>
 
             {/* Status */}
-            {/* <div>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="is_active"
-                  checked={formData.is_active}
-                  onChange={handleChange}
-                  className="w-5 h-5 text-[#3B82F6] border-gray-300 rounded focus:ring-[#3B82F6]"
-                />
-                <span className="text-sm font-medium text-[#0F172A]">
-                  Produit actif (visible aux clients)
-                </span>
-              </label>
-            </div> */}
+            <div>
+              <h2 className="font-serif text-xl font-semibold text-[#0F172A] mb-4">
+                Options
+              </h2>
+              <div className="bg-white p-4 border border-[#3B82F6]/20 rounded-none mb-4">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="is_kids_product"
+                    checked={formData.is_kids_product}
+                    onChange={handleChange}
+                    className="w-5 h-5 text-[#3B82F6] border-gray-300 rounded focus:ring-[#3B82F6]"
+                  />
+                  <span className="text-sm font-medium text-[#0F172A]">
+                    Produit pour enfants (visible dans l'onglet Enfants)
+                  </span>
+                </label>
+              </div>
+            </div>
 
             {/* Submit Buttons */}
             <div className="flex gap-3 pt-4">

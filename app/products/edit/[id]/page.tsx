@@ -40,6 +40,7 @@ export default function EditProductPage() {
   const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>(
     {},
   );
+  const [barcodeOverrides, setBarcodeOverrides] = useState<Record<string, string>>({});
   const [newSize, setNewSize] = useState("");
   const [newQuantity, setNewQuantity] = useState("");
 
@@ -80,6 +81,7 @@ export default function EditProductPage() {
         ...(data.zopos_qty || {}),
       };
       setSizeQuantities(mergedSizes);
+      setBarcodeOverrides(data.barcode_overrides || {});
     } catch (error) {
       console.error("Error fetching product:", error);
       setError("Produit non trouvé");
@@ -136,6 +138,7 @@ export default function EditProductPage() {
         .from("zo-products")
         .update({
           zopos_qty: sizeQuantities, // Our quantity field only - don't update shared fields
+          barcode_overrides: barcodeOverrides,
         })
         .eq("id", productId);
 
@@ -250,7 +253,7 @@ export default function EditProductPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-[#0F172A] mb-2">
-                      Prix (€) *
+                      Prix (FCFA) *
                     </label>
                     <input
                       type="number"
@@ -339,40 +342,58 @@ export default function EditProductPage() {
                     {Object.entries(sizeQuantities).map(([size, qty]) => (
                       <div
                         key={size}
-                        className="flex items-center gap-2 p-3 bg-[#F0F9FF] rounded-none"
+                        className="flex flex-col gap-2 p-3 bg-[#F0F9FF] rounded-none"
                       >
-                        <span className="text-sm font-medium text-[#0F172A] flex-shrink-0">
-                          {size}:
-                        </span>
-                        <input
-                          type="number"
-                          value={qty}
-                          onChange={(e) =>
-                            updateSizeQty(size, parseInt(e.target.value) || 0)
-                          }
-                          min="0"
-                          className="flex-1 px-2 py-1 bg-white border border-[#3B82F6]/20 rounded-lg text-sm
-                                   focus:outline-none focus:ring-1 focus:ring-[#3B82F6]"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeSize(size)}
-                          className="text-red-500 hover:text-red-700 transition-colors flex-shrink-0"
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-[#0F172A] flex-shrink-0 w-8">
+                            {size}:
+                          </span>
+                          <input
+                            type="number"
+                            value={qty}
+                            onChange={(e) =>
+                              updateSizeQty(size, parseInt(e.target.value) || 0)
+                            }
+                            min="0"
+                            placeholder="Qté"
+                            className="flex-1 min-w-0 px-2 py-1 bg-white border border-[#3B82F6]/20 rounded-lg text-sm
+                                     focus:outline-none focus:ring-1 focus:ring-[#3B82F6]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeSize(size)}
+                            className="text-red-500 hover:text-red-700 transition-colors flex-shrink-0"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        </button>
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-2 pl-10">
+                           <input
+                            type="text"
+                            value={barcodeOverrides[size] || ""}
+                            onChange={(e) =>
+                              setBarcodeOverrides({
+                                ...barcodeOverrides,
+                                [size]: e.target.value,
+                              })
+                            }
+                            placeholder="Code barre perso (optionnel)"
+                            className="flex-1 w-full px-2 py-1 bg-white border border-[#3B82F6]/20 rounded-lg text-xs
+                                     focus:outline-none focus:ring-1 focus:ring-[#3B82F6]"
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>
