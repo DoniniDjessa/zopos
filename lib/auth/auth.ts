@@ -180,6 +180,22 @@ export const authService = {
   },
 
   /**
+   * Update the current user's password
+   */
+  async updatePassword(newPassword: string) {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error("Update password error:", error);
+      throw error;
+    }
+  },
+
+  /**
    * Get the current user session
    */
   async getSession() {

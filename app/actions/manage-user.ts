@@ -74,3 +74,30 @@ export async function suspendUserAction(userId: string, suspend: boolean) {
     return { success: false, error: error.message };
   }
 }
+
+export async function forceUpdatePasswordAction(email: string, newPassword: string) {
+  try {
+    // 1. Get user by email to find their ID
+    const { data: profile, error: selectError } = await supabaseAdmin
+      .from("zop-users")
+      .select("id")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (selectError) throw selectError;
+    if (!profile) throw new Error("Utilisateur non trouvé.");
+
+    // 2. Update password in auth (admin bypasses existing password)
+    const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(
+      profile.id,
+      { password: newPassword }
+    );
+
+    if (authError) throw authError;
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error forcing password update:", error);
+    return { success: false, error: error.message };
+  }
+}

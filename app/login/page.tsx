@@ -4,11 +4,18 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authService } from "@/lib/auth/auth";
+import { forceUpdatePasswordAction } from "@/app/actions/manage-user";
+
+// set to true to show the "forgot password" / "force update" UI
+const SHOW_PASSWORD_UPDATE_MODE = false;
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [isUpdateMode, setIsUpdateMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -42,13 +49,33 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+    setSuccess("");
 
     try {
-      await authService.login({ email, password });
-      router.push("/"); // Redirect to home page after successful login
+      if (isUpdateMode && newPassword) {
+        // 1. Force update password from server (no need for current password)
+        const result = await forceUpdatePasswordAction(email, newPassword);
+        
+        if (!result.success) {
+          throw new Error(result.error || "Échec de la mise à jour forcée.");
+        }
+
+        setSuccess("Mot de passe mis à jour avec succès ! Connexion en cours...");
+        
+        // 2. Log in with the NEW password
+        await authService.login({ email, password: newPassword });
+        
+        setTimeout(() => {
+          router.push("/");
+        }, 1500);
+      } else {
+        // Standard Login
+        await authService.login({ email, password });
+        router.push("/"); 
+      }
     } catch (err: any) {
       setError(
-        err.message || "Échec de la connexion. Vérifiez vos identifiants.",
+        err.message || "Échec de l'opération. Veuillez vérifier vos identifiants.",
       );
       setIsLoading(false);
     }
@@ -72,8 +99,14 @@ export default function LoginPage() {
           </h2>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-1.5 rounded-none text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-1.5 mb-6 rounded-none text-sm">
               {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="bg-emerald-50 border border-emerald-200 text-emerald-600 px-4 py-1.5 mb-6 rounded-none text-sm">
+              {success}
             </div>
           )}
 
@@ -99,34 +132,79 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Password Field */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-[#0F172A] mb-2"
-              >
-                Mot de passe
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-4 py-1.5 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none 
-                         focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent
-                         transition-all duration-200 text-[#0F172A]"
-                placeholder="••••••••"
-              />
-            </div>
+            {/* Password Field (Current) - Hide if in update mode */}
+            {!isUpdateMode && (
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-[#0F172A] mb-2"
+                >
+                  Mot de passe
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required={!isUpdateMode}
+                  className="w-full px-4 py-1.5 bg-[#F0F9FF] border border-[#3B82F6]/20 rounded-none 
+                           focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent
+                           transition-all duration-200 text-[#0F172A]"
+                  placeholder="••••••••"
+                />
+              </div>
+            )}
+
+            {/* Toggle Update Mode */}
+            {SHOW_PASSWORD_UPDATE_MODE && (
+              <div className="flex items-center gap-2 py-2">
+                <input
+                  type="checkbox"
+                  id="update-password"
+                  checked={isUpdateMode}
+                  onChange={(e) => setIsUpdateMode(e.target.checked)}
+                  className="w-4 h-4 text-[#3B82F6] border-[#3B82F6]/20 rounded-none focus:ring-[#3B82F6]"
+                />
+                <label
+                  htmlFor="update-password"
+                  className="text-sm font-medium text-[#0F172A]/70 cursor-pointer"
+                >
+                  🛠️ Nouveau mot de passe (J&apos;ai oublié le mien)
+                </label>
+              </div>
+            )}
+
+            {/* New Password Field (Conditional) */}
+            {isUpdateMode && (
+              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                <label
+                  htmlFor="new-password"
+                  className="block text-sm font-medium text-[#3B82F6] mb-2"
+                >
+                  Nouveau mot de passe
+                </label>
+                <input
+                  id="new-password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required={isUpdateMode}
+                  className="w-full px-4 py-1.5 bg-white border border-[#3B82F6] rounded-none 
+                           focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent
+                           transition-all duration-200 text-[#0F172A]"
+                  placeholder="Nouveau ••••••••"
+                />
+              </div>
+            )}
 
             {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#3B82F6] text-white py-1.5 rounded-none font-medium
-                       hover:bg-[#2563EB] active:scale-[0.98] transition-all duration-200
-                       disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#3B82F6]/25"
+              className={`w-full py-1.5 rounded-none font-medium active:scale-[0.98] transition-all duration-200
+                       disabled:opacity-50 disabled:cursor-not-allowed shadow-lg 
+                       ${isUpdateMode ? "bg-[#3B82F6] hover:bg-[#2563EB] shadow-[#3B82F6]/25" : "bg-[#0F172A] hover:bg-black shadow-black/10"} 
+                       text-white`}
             >
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -146,10 +224,10 @@ export default function LoginPage() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  Connexion...
+                  {isUpdateMode ? "Mise à jour..." : "Connexion..."}
                 </span>
               ) : (
-                "Se connecter"
+                isUpdateMode ? "Mettre à jour et se connecter" : "Se connecter"
               )}
             </button>
           </form>
