@@ -34,6 +34,7 @@ export default function EditProductPage() {
     category: "",
     image_url: "",
     is_active: true,
+    is_kids_product: false,
   });
 
   // Size quantities management
@@ -73,6 +74,7 @@ export default function EditProductPage() {
         category: data.category,
         image_url: data.image_url || "",
         is_active: data.is_active,
+        is_kids_product: data.is_kids_product || false,
       });
 
       // Merge default sizes with existing zopos_qty
@@ -139,6 +141,7 @@ export default function EditProductPage() {
         .update({
           zopos_qty: sizeQuantities, // Our quantity field only - don't update shared fields
           barcode_overrides: barcodeOverrides,
+          is_kids_product: formData.is_kids_product,
         })
         .eq("id", productId);
 
@@ -437,6 +440,27 @@ export default function EditProductPage() {
                     Ajouter
                   </button>
                 </div>
+              </div>
+            </div>
+
+            {/* Status Options */}
+            <div>
+              <h2 className="font-serif text-xl font-semibold text-[#0F172A] mb-4">
+                Options
+              </h2>
+              <div className="bg-white p-4 border border-[#3B82F6]/20 rounded-none mb-4">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="is_kids_product"
+                    checked={formData.is_kids_product}
+                    onChange={handleChange}
+                    className="w-5 h-5 text-[#3B82F6] border-gray-300 rounded focus:ring-[#3B82F6]"
+                  />
+                  <span className="text-sm font-medium text-[#0F172A]">
+                    Produit pour enfants (visible dans l'onglet Enfants)
+                  </span>
+                </label>
               </div>
             </div>
 

@@ -38,6 +38,7 @@ export default function AddProductPage() {
     comfort_score: "",
     insulation_score: "",
     flexibility_score: "",
+    is_kids_product: false,
   });
 
   // Size quantities management - initialize with default sizes
@@ -92,6 +93,7 @@ export default function AddProductPage() {
         comfort_score: product.comfort_score?.toString() || "",
         insulation_score: product.insulation_score?.toString() || "",
         flexibility_score: product.flexibility_score?.toString() || "",
+        is_kids_product: product.is_kids_product || false,
       });
 
       // Merge default sizes with any existing zopos_qty from the product
@@ -173,6 +175,7 @@ export default function AddProductPage() {
             zopos_qty: sizeQuantities, // Our quantity field only
             image_url: formData.image_url || null,
             is_active: formData.is_active,
+            is_kids_product: formData.is_kids_product,
             created_by: user?.id,
           });
 
