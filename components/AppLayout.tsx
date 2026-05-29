@@ -334,6 +334,34 @@ export default function AppLayout({ children }: AppLayoutProps) {
             </div>
           </Link>
 
+          {/* Paiements */}
+          <Link href="/paiements" onClick={() => setSidebarOpen(false)}>
+            <div
+              className={`flex items-center gap-2 px-3 py-1 rounded-none transition-colors cursor-pointer group ${
+                isActive("/paiements")
+                  ? "bg-[#3B82F6]/10"
+                  : "hover:bg-[#3B82F6]/10"
+              }`}
+            >
+              <svg
+                className="w-4 h-4 text-[#3B82F6] group-hover:text-[#2563EB] flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+                />
+              </svg>
+              <span className="text-xs font-medium text-[#0F172A]">
+                Paiements
+              </span>
+            </div>
+          </Link>
+
           {/* Utilisateurs - For Admins and Super Admins */}
           {isAdmin && (
             <Link href="/utilisateurs" onClick={() => setSidebarOpen(false)}>
